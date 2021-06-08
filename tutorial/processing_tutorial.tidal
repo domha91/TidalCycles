@@ -1,0 +1,13 @@
+ˇ
+--processing tutorial
+
+d1 $ slow 4 $ sound "bd*32"
+  # pan sine
+  # gain (slow 2 $ range 0.5 1 saw)
+
+let scene = pS "scene"
+
+d1 $ slow 4 $ sound "bd*32"
+  # pan sine
+  # gain (slow 2 $ range 0.5 1 saw)
+  # scene "blue red"

@@ -1,0 +1,48 @@
+--Create a pattern grouping
+d1 $ s "[bd sd] hh"
+--Equivalent
+d1 $ fastcat [s "bd sd", s "hh"]
+
+-- Shorthand for pattern grouping
+d1 $ s "bd sd . hh hh hh"
+--Equivalent
+d1 $ s "[bd sd] [hh hh hh]"
+
+--Play multiple patterns at the same time
+d1 $ s "[bd sd, hh hh hh]"
+--Equivalent
+d1 $ stack [s "bd sd", s "hh hh hh"]
+
+--Repeat a pattern
+d1 $ s "bd*2 sd"
+--Equivalent
+d1 $ s "[bd bd] sd"
+
+--Slow down a pattern
+d1 $ s "bd/2" 
+--Equivalent
+d1 $ s (slow 2 $ "bd")
+
+--Alternate betwwen patterns
+d1 $ s "bd <sd hh cp>"
+--Equivalent
+d1 $ slow 3 $ s "bd sd bd hh bd cp"
+
+--Replicate a pattern
+d1 $ s "bd!3 sd"
+--Equivalent
+d1 $ s "bd bd bd sd"
+
+--Elongate a pattern
+d1 $ s "bd _ _ ~ sd _"
+--Equivalent
+--Results in pattern: (0>1/2)|s: "bd" (4/6>1)|s: "sd"
+
+--Randomly removes events from pattern
+d1 $ s "bd? sd" 
+--Equivalent
+d1 $ fastcat [degradeBy 0.5 $ s "bd", s "sd"]
+
+--Selecting samples 
+d1 $ s "bd:3"
+--Equivalent

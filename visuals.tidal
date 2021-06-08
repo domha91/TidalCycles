@@ -1,0 +1,23 @@
+
+setcps "0.4"
+
+
+do
+d1 $ n "[0 ~ ~ 1] [~ 0] ~ [~ ~ ~ 1]" # s "didyChrom136" # shape 0.7 # gain 0.5
+d2 $ s "~ didyChrom136:2" # squiz 2
+d3 $ n "<0 3 2 5>/4" # s "midi" 
+    # ccv "10" 
+    # ccn 1
+d4 $ n "<14 13>/4" # s "didyChrom136"
+d5 $ s "didyChrom136:17/8" # djf 0.7
+d6 $ n "[6 . 6 5 . 6 . 5]*4" # s "didyChrom136" 
+d7 $ n "[9 ~ [9 ~ ~ 9] 8*3]/2" # s "didyChrom136" # shape 0.4
+d8 $ slow 4 $ loopAt 1 $ striate 4 $ sound "didyChrom136:16 didyChrom136:17*4" # gain 1.3
+
+
+x1 $ s "bd" # cut 1 # intensity 2
+x1 $ silence
+
+
+
+

@@ -1,0 +1,68 @@
+-- Modifying sequences with functions 
+do
+    d1 $ every 4 (rev) (sound "~ ~ ades2:1] . ade:5*19 ades2:1*2")
+        # gain 0.5
+    d2 $ slow 4 $ sound "hh*2 [hh [hh:1 hh*2 hh:6] hh]"
+    d3 $ slow 1 $ sound "~ bass bass:1 . ~ ~ bass "
+    d4 $ sound "em2:5/4"
+    
+    d1 $ s (every 4 (fast 4) "bd*2 [bd [ sn sn*2 sn*3] sn] ")
+    
+    -- multi channel outs (8 x stereo) (change startup.scd)
+    d1 $ slow 4 $ orbit "0 1 2 3 4 5 6 7"
+        # n "0 1 2 3 4 5 6 7" # sound "alphabet"
+    
+    -- Applying effects with control patterns
+    
+    d1 $ s "bd*4 [sn [sn*2 sn]]" # crush "7 8 9 3" # speed "2"-- spreads to fit patterns
+    -- Combine control patterns ( crush and sound) with #
+    -- All control patterns follow the same grouping rules
+    d1 $ s "bd*4 sn*4" # gain "[[1 0.8]*2 [0.5 0.7]]/2"
+    
+    -- $ passes speed as a pattern to the rev function
+    d1 $ s "bd*4 [sn [sn*2 sn]]" # (every 4 (rev) $ speed "1 2 3 4")
+    -- you can also use parenthesis
+    d1 $ s "bd*4 [sn [sn*2 sn]]" # (every 4 (rev) (speed "1 2 3 4"))
+    
+    --Control pattern order
+    d1 $ gain "1 0.8 0.5 0.7" # s "bd"
+    --pattern structure comes from the left most pattern
+    d1 $ s "bd" # gain "1 0.8 0.5 0.7"
+    
+    --Modifying control values
+    d1 $ every 2 (|> speed "2") $ sound "arpy*4" |> speed "1" <| 2 |/ 2
+    -- Combine patterns with |> + <| + |* + |/
+    d1 $ every 2 (|- speed "1.0") $ sound "arpy*4" |/ speed "5"
+    
+    d1 $ every 2 (|+ speed "1") $ sound "arpy*4" |> speed "1"
+    --The code above results in a speed of “2” every other cycle.
+    --The following will multiply values:
+    d1 $ every 2 (|* speed "1.5") $ sound "arpy*4" |> speed "1" # vowel "o e i a"
+    --More complex patterns and chaining can be done, and with any effect, of course:
+    d1 $ every 3 (|- note "3") $ every 2 (|+ up "5") $ sound "arpy*4" # vowel "a i" |> note "0 2 4 5"
+    --Shorthand for numerical patterns
+    --From version 0.9 of Tidal, there are some nice ways of saving on keypresses 
+    --when working with numerical patterns.
+    
+    --For example, when specifying patterns of single numbers, such as:
+    
+    d1 $ sound "arpy(3,8)" # n "2"
+    --you can miss off the double quotes, so this works fine:
+    
+    d1 $ sound "arpy(3,8)" # n 2
+    --However, if you wanted more than one value in that n pattern, you’d have to put the quotes in:
+    
+    d1 $ sound "arpy(3,8)" # n "2 5"
+    --You can also treat patterns of numbers as simple numbers in other ways. For example doing algebra:
+    
+    d1 $ sound "arpy(3,8)" # n ("0 2" * 2)
+    
+    d1 $ sound "arpy(3,8)" # n (every 4 (* 2) "0 2")
+    
+    d1 $ n (off 0.125 (+12) $ off 0.25 (+7) $ slow 2 $ "0(3,8) [5 7]") # sound "supergong"
+    --You can also now specify increasing or decreasing numbers with a range, for example this:
+    
+     d1 $ n "[0 .. 7] [3 .. 1]" # sound "supergong"
+    --is shorthand for:
+    
+    d2 $ n "[0 1 2 3 4 5 6 7] [3 2 1]" |/0.5 |* 0.5 # sound "supergong"

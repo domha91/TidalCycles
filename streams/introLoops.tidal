@@ -1,0 +1,56 @@
+--TODO: Learn getScale 
+
+let scale = getScale (scaleTable ++ [("pelogi", [2,3,8,9,10,14]),
+                                     ("slendro", [0,2.3,4.8,7.3,9.3,12])
+                                    ])
+
+-- TODO: Set up superfm
+d1 $ up "0" # s "superfm"
+# fmamp 1 "3" # fmamp 2 "1" # fmamp 3 "0"
+# fmamp 4 "0" # fmamp 5 "0" fmamp6 "0"
+# fmmod 1 2 "0.5" # fmratio 2 "2" # fmdetune 2 "0"
+# fmmod 1 3 "0.5" # fmratio 3 "2"
+# fmmod 2 4 "0.5" # fmmod 3 4 "0.5" # fmratio 4 "0.5" # fmdetune 4 "0"
+# fmeglevel 1 1 "3" # fmeglevel 1 2 "2" # fmeglevel 1 3 "1" # fmeglevel 1 4 "1"
+# fmegrate 1 1 "0.5" # fmegrate 1 2 "2" # fmegrate 1 3 "0.5" # fmegrate 1 4 "0.1"
+# fmeglevel 2 1 "2" # fmeglevel 2 2 "1" # fmeglevel 2 3 "1" # fmeglevel 2 4 "1"
+# fmegrate 2 1 "10" # fmegrate 2 2 "1" # fmegrate 2 3 "1" # fmegrate 2 4 "1"
+# fmeglevel 3 1 "3" # fmeglevel 3 2 "1" # fmeglevel 3 3 "1" # fmeglevel 3 4 "1"
+# fmegrate 3 1 "10" # fmegrate  3 2 "1" # fmegrate 3 3 "1" # fmegrate 3 4 "1"
+# legato "3"
+
+--63drums(41)
+--63loops(10)
+--63samples(22)
+
+-- OSC Test
+setcps(90/60/4)
+
+do
+d1 $ s "bd ~ "
+d2 $ s "~ sn"
+d3 $ s "hi lo!7" 
+    # squiz 0.2 # sine 
+d4 $ s "hc ho hc ho"
+d5 $ splice 8 " 0 1 2 3 4 5 6 7" $ s "63loops:6"
+    
+
+"bd sn bd sn"::Pattern String
+
+do
+    setcps(180/60/4)
+    d1 $ s "[63drums:1(3,8)]*2 ~ [63drums:1 ~ ~ 63drums:1] ~" # squiz "1.2 1"
+    d2 $ n "30 40 30 25" # s "63drums" # shape 0.8
+    -- TODO: How to use 'once' with this for FX
+    once $ slow " 0.2 0.5" $ n "0" # s "63samples:11"
+    d4 $ n "[35*8 ~]*2" # s "63drums" # vowel "i o"
+    d5 $ s "<63samples:2 63samples:3>/2" # djf "0.2..0.4" 
+
+
+d4 $ slow "0.5 <1 2>" $ n "[35*8 ~]*2 [20 35*7] [35*12]" # "63drums"
+# vowel "a i e u"
+
+setcps(120/60/4)
+d1 $ s "bd sn bd sn"
+d2 $ n "[~ 20]*4" # s "63drums"
+d3 $ n "63"

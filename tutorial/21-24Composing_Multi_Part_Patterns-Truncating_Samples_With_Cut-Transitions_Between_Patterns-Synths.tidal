@@ -1,0 +1,74 @@
+
+
+--Composing Multi-Part Patterns
+-- Concatenating pattern in serial
+d1 $ fastcat [s "bd sn:2" # vowel "[a o/2]" , s "casio casio:1 casio:2*2",   s "drum drum:2 drum:3 drum:4*2"]
+d1 $ cat [s "bd sn:2" # vowel "[a o/2]" , s "casio casio:1 casio:2*2",   s "drum drum:2 drum:3 drum:4*2"]
+d1 $ randslice [s "bd sn:2" # vowel "[a o/2]" , s "casio casio:1 casio:2*2",   s "drum drum:2 drum:3 drum:4*2"]
+
+-- Playing patterns together in parallel
+--  You can apply functions or effects to the whole stack
+d2 $ stack [ s "bd bd*2" , s "hh*2 [sn cp] future*4", s (samples "arpy*8" (run 16))] # speed "[[1 0.8], [1.5 2]*2]/3"
+
+--Truncating Samples with "cut"
+-- Chokes a sound when a new sample is triggered
+d1 $ s (samples "arpy*8" (run 8)) # speed "0.25"
+-- We can stop this bleed by using cut and assigning 
+-- the pattern a cut group, in this case of “1”:
+d1 $ s (samples "arpy*8" (run 8)) # speed "0.25" # cut "1"
+--  Use different cut groups on each d1, d2 Dirt 
+--  connections.
+d1 $ s (samples "arpy*8" (run 8)) # speed "0.25" # cut "1" 
+d2 $ s (samples "bass3*6" (run 6)) #speed "0.5" # cut "2"
+d1 $ stack [  sound (samples "arpy*8" (run 8)) # speed "0.25" # cut "1",  sound (samples "bass2*6" (run 6)) # speed "0.5" # cut "2" ]
+
+--Transitions Between Patterns
+
+d1 $ s (samples "hc*8" (iter 4 $ run 4))
+# gain "0.3 0.5 0.7 0.1 1 0.5 0.8 0.9"
+
+anticipate 1 $ s (samples "bd(3,8)" (run 3))
+--fades in over 16 cycles
+xfadeIn 1 16 $ s "bd(5,8)"
+
+--Synths
+-- midi scale (60 is middle c)
+d1 $ midinote "60 62*2" # s "supersaw"
+-- note names
+d1 $ n "c5 d5*2" # s "supersaw"
+-- add "f" or "s" (flat or sharp) for semitones. A7 D7 cs5 fs5
+d1 $ n "<[a5, cs5, e5 g5]*3 [d5,fs5,g5,c5]>" # s "supersquare" # gain "0.7"
+-- same chords played as arpeggio
+d2 $ every 4 (rev) $ n "<[g5 df5 e5 a5] [gf5 d5 c5 g5]*3>" # s "supersaw"
+
+-- specifying note numbers with n (0 is middle c)
+d1 $ n "0 5" # s "supersaw"
+
+-- adjust sustain length
+d1 $ n "c5 d5*2" # s "supersaw" # sustain "0.4 0.2" 
+
+-- Many example synths can be found in the default-synths-extra.scd file in the SuperDirt/library folder or in 
+-- default-synths.scd and tutorial-synths.scd in the SuperDirt/synths folder.
+--  examples
+d1 $ jux (# accelerate "-0.1") $ s "supermandolin*8" # midinote "[80!6 78]/8" # sustain "1 0.25 2 1"
+
+d1 $ midinote (slow 2 $ (run 8) * 7 + 50) # s "supergong" # decay "[1 0.2]/4" # voice "[0.5 ]/8" # sustain (slow 16 $ range 5 0.5 $ saw)
+
+d1 $ s "superhat:0*8" # sustain "0.125!6 1.2" # accelerate "[0.5 -0.5]/4"
+
+d1 $ s "super808 supersnare" # n (irand 5) # voice "0.2" # decay "[2 0.5]/4" # accelerate "-0.1" # sustain "0.5" # speed "[0.5 2]/4"
+
+d1 $ s n (slow 8 "[[c5 e5 g5 c6]*4 [b4 e5 g5 b5]*4]") # s "superpiano" # velocity "[1.20 0.9 0.8 1]"
+
+d1 $ n "[c2 e3 g4 c5 c4 c3]/3" # s "[superpwm supersaw supersquare]/24" # sustain "0.5" # voice "0.9" # semitone "7.9" # resonance "0.3" # lfo "3" # pitch1 "0.5" # speed "0.25 1"
+
+d1 $ every 16 (density 24 . (|+| midinote "24") . (# sustain "0.3") . (# attack "0.05")) $ s "supercomparator/4" # midinote ((irand 24) + 24) # sustain "8" # attack "0.5" # hold "4" # release "4" # voice "0.5" # resonance "0.9" # lfo "1" # speed "30" # pitch1 "4"
+
+d1 $ n "[c2 e3 g4 c5 c4 c3]*4/3" # s "superchip" # sustain "0.1" # pitch2 "[1.2 1.5 2 3]" # pitch3 "[1.44 2.25 4 9]" # voice (slow 4 "0 0.25 0.5 0.75") # slide "[0 0.1]/8" # speed "-4"
+2
+d2 $ every 4 (echo (negate 3/32)) $ n "c12*8" # s "supernoise" # vowel " a e i o" # accelerate "-2" # speed "1" # sustain "0.1 ! ! 1" # voice "0.0"
+
+d3 $ s "supernoise/16" # midinote ((irand 5) + 30) # sustain "8" # accelerate "0.5" # voice "0.5" # pitch1 "0.15" # slide "-0.5" # resonance "0.7" # attack "1" # release "20" # room "0.9" # size "0.9" # orbit "1"
+-- read about modifying and adding your own synths to SuperDirt at its github repository.
+
+hush

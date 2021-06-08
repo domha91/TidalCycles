@@ -1,0 +1,55 @@
+--Control busses
+
+--This lets you route an effect via a bus.. In practice, this means you can pattern the effects of a sound while it's playing.
+
+-- A simple sax sound
+d1 $ sound "sax" # legato 1
+
+-- This doesn't do anything different
+d1 $ sound "sax" # legato 1 # squiz "0 1.5 0 1.5"
+
+-- A workaround is to chop up the sounds into parts:
+d1 $ chop 4 $ sound "sax" # legato 1 # squiz "0 1.5 0 1.5"
+
+-- But now you can use a bus to change a single sound while it plays:
+d1 $ sound "sax" # legato 1 # squizbus 1 "0 1.5 0 1.5"
+
+-- You can add a bus to most things but have to take care to give each thing a different bus number:
+d1 $ sound "sax" # legato 1 # squizbus 1 "0 1.5 0 1.5" # lpfbus 2 "400 2000 3000" # lpq 0.2
+
+-- You can pattern things within bus patterns:
+d1 $ sound "sax" # legato 1 # squizbus 1 (chunk 4 (fast 4) "0 1.5 0 1.5")
+
+-- A big limitation is that bus patterns are monophonic. So if you do some patterning that layers them up, you'll be disappointed with the results:
+d1 $ jux rev $ s "sax" # ampbus 1 ("[1 0 [1 0] 1]*6") # legato 1 
+
+-- A workaround is to add 1 to the bus number, and 0 to the value: 
+d1 $ jux (rev . (|+ ampbus 1 0)) $ s "sax" # ampbus 1 ("[1 0 [1 0] 1]*6") # legato 1 
+
+-- Or replace the control using a different bus number with `#`
+d1 $ jux (rev . (# ampbus 2 "1 0 1 0")) $ s "sax" # ampbus 1 ("[1 0 [1 0] 1]*6") # legato 1 
+--Most things work, but some key things like speed, gain, vowel and note don't.
+--panbus will work, but in the range -1 to 1 instead of 0 to 1. Working on this.. (That range would be better in general, as you could multiply patterns to change amplitude)
+
+--Syncopation with press
+
+--A simpler function that I'm excited about is press. In mininotation terms it basically turns every instance of 'a' into '[~ a]'.. Every beat then becomes an offbeat and so the overall effect is to syncopate a pattern.
+
+--A couple of quick examples:
+
+d1 $ stack [every 4 (fast 2) $ sound "drum*4" # squiz 1.3 # speed 2,
+            every 2 press $ sound "sd:1*2 sd:4*3 sd*2 sd:2*2"
+]
+
+d1 $ jux press $ sound "sd:1*2 sd:4*3 sd*2 sd:2*2"
+
+--Microtonal Snippet
+
+let  m p = s "midi" # midichan(p - 1)
+d1 $ fast 2 $ every 11 (0.125 <~) $ every 13 (0.25 ~>) $
+struct "t(5,8, < 2 5>" $ stack [
+    nTake "will" [-16, -16, -16, -14 ] # m 1,
+    --melody (arturia pigments)
+    (|+ n (toScale[0,2,5,7,9] "2 5 8")) $ nTake "alex" [0,3,-2,10] # m 2
+]
+d2 $ fast 2 $ n "-24 -24" # m 1 

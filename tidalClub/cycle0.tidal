@@ -1,0 +1,1585 @@
+
+--MIDI clock
+--First, you can start sending MIDI clock messages, 48 per cycle, like this:
+
+p "midiclock" $ midicmd "midiClock*48" # s "midi"
+--Your MIDI device should then adjust its BPM to Tidal's cps. Then it's worth sending a 'stop' message like this:
+once $ midicmd "stop" # s "midi"
+--and then finally a start message to start the MIDI clock at the right time. The following sends a start message every fourth cycle:
+p "midictl" $ midicmd "start/4" # s "midi"
+--Once everything's started and in sync, it's probably best to stop sending the start messages to avoid glitching:
+p "midictl" $ silence
+--However now if you do hush, the midiclock will stop as well as all the other patterns. 
+--To avoid this, you can overwrite the hush function with a version that silences particular patterns:
+let hush = mapM_ ($ silence) [d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,d13,d14,d15,d16]
+--You will probably find that the downbeats for superdirt and your MIDI devices don't align. 
+--As a starting point, set MIDI latency in supercollider to 0.
+--Make sure any offset on the MIDI side is also set to 0, then gradually adjust one of them until they align. 
+--If they stay in alignment when you change the cps, all is good!
+
+-- MIDI
+
+d1 $ n "0 10 7 3" # s "midi"
+
+
+
+--That should play a simple four-note pattern. 
+--Notice we're just using the synth name "midi" to send notes to the MIDI device.
+--You can also use the note-name and octave notation:
+
+
+d1 $ n "c4 d4 e5 g3" # s "midi"
+
+--The default MIDI channel is 1. SuperDirt MIDI channels are indexed starting at zero, 
+--so MIDI channel 1 is midichan 0:
+
+d1 $ note "0 2 4 <7 8>" # s "midi" # midichan 0
+# cc "4:00"
+
+--Notice that midichan accepts a pattern of numbers, so you can use a pattern to play on different MIDI channels:
+
+-- CC Params
+
+--To send a CC param to your synth, the best way to do it is with a different Tidal pattern.
+--To create this pattern, you'll be using two new SuperDirt MIDI params:
+
+--ccn - the CC param number you want to control: ccn 30
+--ccv - the value to send to the CC param, ranging from 0 to 127: ccv 64
+--Here's a full example, sending a value of 64 to CC param 1 (mod wheel on microkorg):
+
+d2 $ ccv 64 # ccn 1 # s "midi"
+
+--You can of course also specify the MIDI channel with midichan:
+
+d2 $ ccv 0 # ccn 1 # s "midi" # midichan 0
+
+--You can specify patterns of CC values:
+
+d2 $ ccv "20 40 60 80 100" # ccn 1 # s "midi"
+d2 $ ccn "1*4" # ccv (range 20 100 $ slow 30 sine) # s "midi"
+
+--Note that the left-most pattern defines the rhythm in this case when using #.
+
+--If you have a specific feature on your device that listens on a specific CC number, 
+--you can give it a friendly name if you wish:
+
+let microkorgModWheel = 100;
+d2 $ ccv "0 20 50 60" # ccn microkorgModWheel # s "midi"
+
+--If you have many CC params you want to control at once, a stack works well:
+do
+d1 $ n "0 1 2 8 9 11" # s "midi"
+d2 $ density 8 $ stack [
+  ccn microkorgModWheel # ccv (range 0 127 $ slow 30 sine),
+  ccn 2 # ccv "[0 70 30 110]/3",
+  ccn 3 # ccv 10 
+  ] # s "midi"
+
+-- Mini notation examples
+-- !!! TIP !!!  
+-- ALWAYS COPY A GOOD PATTERN BEFORE MAKING CHANGES
+
+do
+d1 $ n " 0 1 0 0 0 1 0 0 0 1 [0 1 2] 0 0 1 0 0" # s "bshihat"
+d2 $ n " ~ ~ ~ ~ ~ ~ ~ ~ 0 ~ ~ ~ ~ ~ ~ ~" # s "snare"
+d3 $ n " 0 ~ ~ ~ ~ ~ 1 ~ ~ ~ ~ ~ ~ ~ ~ ~" # s "63drums:1"
+d4 $ n "3 2 4 5 6 3 2 1" # s "63drums"
+d5 $ n " [0 1 2 , 4 4]" # s "rash"
+
+d7 $ n "~ 3" # s "63samples"
+
+d9 $ n "<-1 5 7 0>" # s "midi" -- Just Mixolydian
+
+do 
+d1 $ n " [ 0 1 2] [0[1 2[3]]] 1 [3 1]" # s "bshihat"
+d2 $ n " 0 1 , 3" # s "snare"
+d3 $ n " <1 2>*4" # s "63drums:4"
+d4 $ n " <3 2> 4 5 6 3 2" # s "bsperc"
+d5 $ n " [0 1 1 ~ 0, 2]" # s "63drums"
+
+d7 $ n "29" # s "63samples"
+
+d9 $ n "10 9 7 5" # s "midi" -- Just Mixolydian
+
+
+
+-- Mini-notation worksheet, number one!
+
+-- Play a "kick" sound (the first one in the folder)
+do
+d1 $ sound "kick" # shape 0.7
+
+
+-- Play a different sound from the "kick" folder (the fourth one, counting from zero)
+do
+d1 $ sound "kick:3*4" # squiz 2
+ 
+
+-- Play a kick - snare loop. Notice two sounds fit in the same time as one did above
+do
+d1 $ sound "kick snare" # djf 0.2 # shape 0.8
+
+
+-- The more you add, the faster it goes - the 'cycle' stays constant
+d1 $ sound "kick snare kick snare" # bpf (range 400 5000 sine)  # shape 0.99
+
+d1 $ every 3 (0.33 <~) $ sound "kick snare kick snare kurt hi lo hi lo" # shape "0.2 0.4 0.9" 
+
+-- Again, we can pick sounds with : and a number
+
+d1 $ sound "cpu:0 cpu:2 cpu:4 cpu:6 cpu:0 cpu:2 cpu:6 cpu:8" # squiz (rangex 0.4 5 saw)
+
+-- If they're all from the same folder, it's easier to pattern
+-- the sounds using a separate "n" pattern, like this:
+
+d1 $ n " 0 2 0 2 0 2 0 2" # s "808" 
+
+do
+setcps 0.4
+d1 $ n "0 2 4 6 0 2 6 8" # sound "cpu" # shape 0.9 
+d2 $ n "0(3,8)" # s "bskick" # shape 0.6
+d3 $ n "~ < 0 3 1>" # s "bssnare" # shape 0.9
+d4 $ n " ~!6 4" # s "bsnoise" # cut 1 
+d5 $ n "0*8" # s "bshihat" # cut 1 # squiz 4
+d6 $ note "0!2 3 2" # s "bsbass" # shape 0.8
+
+-- `#` combines together patterns of different kinds, in this case a 'sound'
+-- and an 'n' pattern.
+-- We'll come back to `#` (and how it differs from '$') in the future!
+
+-- You can have an 'empty' step, known as a musical rest, with '~'
+d1 $ sound "kick snare ~ clap:4"
+
+do
+d1 $ n "0 2 2 ~ 8 ~ 8 ~" # sound "cpu"
+d2 $ s "<rash:1 rash:0>!2" 
+  # delay 0.1 # delaytime 0.2 # delayfeedback 0.8
+
+-- You can also "break down" a step into a subsequence, with []
+
+-- Lets start with a simple pattern
+d5 $ sound "hi lo hi lo"
+
+-- And squeeze a two-step subsequence inside that third step:
+do
+d5 $ sound "hi lo [hi hi] lo"
+d6 $ s "claus [claus:2 [claus*2] claus:1] claus:3 claus:2"
+d7 $ n "< 3 6 3 9 >" # s "cc" # gain 0.8 # room 0.4
+
+do
+d5 $ n "[0 1 3 2 4 5 6 2] 2" # s "can"
+d6 $ s "bd:6*4"
+d7 $ n " [~ <2 0 1 3>]*4" # s "snare"
+
+-- It works for 'n' patterns too
+do
+d5 $ n "0 1 [5 6 5] 4 " # sound "drum"
+d6 $ n "3/2 3 3*2 [3*3]" # s "drum" # squiz 1 # gain 1.2
+
+-- You can even break down a step inside a subsequence:
+do
+d5 $ sound "hi lo [hi [hi lo hi lo]] lo"
+d6 $ n "0 0 [1 2]" # s "hi" # shape 0.6
+
+-- It's easy to make nice compound time signatures:
+
+do
+d5 $ sound "[hi lo hi] [hi lo hi lo]" 
+  # room 0.2 # sz 0.2 # shape 0.6
+d6 $ sound "[foley:1*5 foley:1] [foley:2 foley:3]" 
+  # shape 0.5
+
+-- SPEEDING UP, REPEATING, AND SLOWING DOWN
+
+-- SPEEDING UP A STEP WITH "*"
+-- https://www.youtube.com/watch?v=h_f11uago28&t=105s
+
+-- Make a step go 'faster', so it repeats itself within its step:
+d1 $ s "hi lo*2"
+
+d1 $ s "hi lo*3"
+
+d1 $ s "hi*2 lo*4"ˇ
+
+-- It works with subsequences too
+d1 $ sound "hi [hi lo]*2"
+
+d1 $ s "[hi lo hi] [hi lo]*4"
+-- And 'n' patterns
+d1 $ n "[0 ~ 0] 2 [0 9]*2 2" # sound "cpu"
+d2 $ note "3*6 ~ [5 6 8 10] 5*8 ~ [9 8 6 5]" # s "supermandolin"
+
+-- Let's try speeding up a pattern by one-and-a-half:
+d1 $ sound "bd [sd hc]*1.5"
+
+-- It has two steps, so if you speed it up by 1.5, you get three steps.
+-- The first time around you get "bd [sd hc sd]", the second time "bd [hc sd hc]"
+
+-- SLOWING DOWN A STEP WITH "/"
+-- https://www.youtube.com/watch?v=h_f11uago28&t=346s
+
+-- Make 'lo' sound only every other cycle:
+d1 $ sound "hi lo/2"
+
+-- Make 'lo' sound only every third cycle:
+d1 $ sound "hi lo/3"
+
+-- Slow down a subsequence, so only one step sounds per cycle:
+d1 $ sound "clap [numbers:0 numbers:1 numbers:2]/3"
+
+-- Take two steps from a six step sequence each cycle, by slowing it by 3:
+do
+d1 $ n "0 0 0 [0 1 3 4 5 6]/3" # sound "cpu2"
+d2 $ note "0 3 ~ 5 [0 1 3 4 5]/3" # s "superfm"
+
+-- Make things strange by slowing down with funky ratios!
+do
+d1 $ n "0 0 0 [0 1 3 4 5 6]/2.5" # s "cpu2"
+d2 $ n "0" # s "clap"
+
+-- REPEATING A STEP WITH "!"
+-- https://www.youtube.com/watch?v=h_f11uago28&t=275s
+
+-- If you want to repeat steps on the same metrical level, then you can use ! ..
+-- So this:
+d1 $ sound "hi lo!3"
+
+-- Is the same as this:
+d1 $ sound "hi lo lo lo"
+
+
+-- You can also use an ! on its own for a single repeat. So this:
+d1 $ sound "hi lo !"
+
+-- Is the same as this:
+d1 $ sound "hi lo lo"
+
+-- You can repeat subsequences too, so these are the same:
+d1 $ sound "bd bd [hi lo] !"
+
+d1 $ sound "bd bd [hi lo] [hi lo] "
+
+-- POLYPHONY WITH ","
+-- https://www.youtube.com/watch?v=h_f11uago28&t=668s 
+
+-- With ',' you can have more than one subsequence happening at the same time.
+-- Where you have the possibility of more than one note happening at once,
+-- that's called musical "polyphony"
+
+-- This is like where you have multiple channels d1 and d2 active at the same time:
+d1 $ sound "bd sd"
+
+d2 $ sound "rs rs rs"
+
+-- .. but with ","" you can put them both in the same pattern. This sounds
+-- the same as the two above patterns playing at once:
+d1 $ sound "[bd sd, rs rs rs]"
+
+
+-- The subsequences line up to fill the same cycle.
+-- So "[a b, c d e]" lines up like this:
+-- |a--b--|
+-- |c-d-e-|
+
+-- There's an 'alphabet' sample set in the default samples that can help with
+-- this!
+
+-- POLYRHYTHM
+d1 $ n "[0 1, 2 3 4 ]" # sound "alphabet"
+
+-- POLYMETER
+-- There's another way of getting subsequences to align, using { } instead of [ ]:
+d1 $ n "{0 1, 2 3 4}" # sound "alphabet"
+
+d1 $ n "{0 1, 2 3 4}" # sound "superfm"
+
+-- Video explanation: https://www.youtube.com/watch?v=h_f11uago28&t=822s
+
+-- The first three cycles of this looks like this:
+-- |ababab|
+-- |cdecde|
+
+-- What's happening? Well Tidal aligns the first subsequence, "0 1", to fit
+-- the cycle, as before. But then it fits the others to it *stepwise*. So
+-- now the steps align, but the cycles don't! In the space of three
+-- cycles, there are three repetitions of "a b" and two repetitions of "c d e"
+
+-- The [ ] notation creates what is called a musical 'polyrhythm' - multiple
+-- time sigs rhythms happening within the same timeframe, e.g.:
+d1 $ n "[0 5 2 ~, 0 3 4*2 0 3]" # sound "cpu2"
+
+-- The { } notation creates a 'polymetre' - where metres of different durations
+-- phase in and out of each other, e.g.:
+d1 $ n "{0 5 2 ~, 0 3 4*2 0 3}" # sound "cpu2"
+
+-- 'Traditional' music software with linear 'piano roll' style notation systems
+-- can really struggle with polyrhythm/metre, but it's really easy with Tidal
+-- and a *lot* of fun to explore.
+
+-- RHYTHMIC FEET WITH "."
+-- https://www.youtube.com/watch?v=h_f11uago28&t=988s
+
+-- You can 'mark out' regular rhythmic 'feet' with "."
+
+-- So this:
+d1 $ sound "bd sd .ˇ mt ht lt . arpy arpy:4 . snare clap:4 bd"
+
+-- Is another way of saying exactly this:
+d1 $ sound "[bd sd] [mt ht lt] [arpy arpy:4] [snare clap:4 bd]"
+
+
+-- So the "." breaks up a sequence into parts of equal duration
+
+-- To break down a step _within_ the "." notation, you can still
+-- use [], etc:
+d1 $ sound "bd sd . mt [ht mt] lt . arpy [arpy:4 arpy:5] . snare clap:4 bd"
+
+-- That's the same as:
+d1 $ sound "[bd sd] [mt [ht mt] lt] [arpy [<arpy:4 arpy:3> arpy:5]] [snare clap:4 bd]"
+
+-- ONE STEP PER CYCLE WITH "<>"
+-- https://www.youtube.com/watch?v=h_f11uago28&t=1166s
+
+-- Often it's nice to pick one step from a subsequence every cycle.
+-- One way is this:
+do
+d1 $ fast "1 <2 4>" $ sound "bd [[arpy arpy:1]  <arpy:2 arpy:3> [arpy:2 arpy:3 arpy:5]]/4"
+d2 $ s "~ sd"
+
+-- You can do the same thing with < > - it picks one step per cycle, without
+-- you having to worry about how many steps there are inside:
+do
+setcps(220/60/4)
+d1 $ sound "<bd [bd*2]> <arpy arpy:1 arpy:2 arpy:3>"
+d2 $ s "~ < sd ! ! [sd ! ! !] >"
+
+-- REVISION TASKS
+
+-- Copy each of the following patterns in turn, and edit them so that they
+-- are shorter, using the "<>", "!", "[]" and/or "." introduced above.
+-------------------------------------
+d1 $ sound "kick snare snare"
+
+d1 $ s "kick snare!2"
+
+
+-- or 
+
+d1 $ s "kick snare !" -- ! repeats the previous step
+
+d1 $ s "kick snare*6"
+
+-------------------------------
+d1 $ sound "kick [snare snare*2]"
+
+d1 $ s "[kick [snare snare*2]]*2"
+
+-------------------------------
+d1 $ sound "kick snare kick snare kick snare kick snares"
+
+d1 $ s "[kick snare]*4"
+-------------------------------
+d1 $ n "0 [1 2 3]/3" # sound "cpu2"
+
+d1 $ n "0 <1 2 3>" # s "cpu2" 
+
+-------------------------------
+d1 $ n "[0 0 2] [4 5 6 7] [4 1] [0 3 0 3]" # sound "cpu2"
+
+d1 $ n " 0 0 2 . 4 5 6 7 . 4 1 . 0 3 0 3" #  s "cpu2"
+
+-- or 
+
+d1 $ n " 0! 2 . 4 5 6 7 . 4 1 . [0 3] ! " # s "cpu2"
+
+------------------------------
+d1 $ sound "kick snare kick snare kick snare clap"
+
+d1 $ s "[kick snare]!3 clap"
+d1 $ s "[kick snare]!3 clap@0.5" -- @0.5 halves duration of event
+-----------------------------
+d1 $ sound "[kick snare kick snare kick snare] clap"
+
+d1 $ s "kick snare]!3"
+
+-----------------------------
+d1 $ sound "bd sd sd sd bd [sd sd sd]"
+
+d1 $ s " bd sd!3 bd sd*3"
+
+-- Trying to make code as short as possible is called "golfing" for some reason.
+-- It can be useful as a form of practice, but sometimes longer code
+-- is actually much easier to understand and edit!
+
+-- DRAW FUNCTION 
+-- e.g. 
+drawLine $ "[x [a c b]/2 x x, a x [c d]]"ˇ
+
+-- [6 cycles]
+-- |x--a-c---x--|x-- b-x--x--|x--a-c---x--|x-- b-x--x--|x--a-c---x--|x-- b-x--x--
+-- |a---x---c-d-|a---x---c-d-|a---x---c-d-|a---x---c-d-|a---x---c-d-|a---x---c-d-
+
+draw "x(7,12)"
+
+-- |x xx x xx x 
+
+-- Euclidean rhythms
+
+d1 $ s "clap:2(<3 5>, 12)"
+
+drawLine $ "x(<3 5>, 12)"
+
+-- [6 cycles]
+-- |x   x   x   |x  x x  x x |x   x   x   |x  x x  x x |x   x   x   |x  x x  x x 
+
+d2 $ s "bd(2,<6 9>)"
+
+drawLine $ "x(2,<6 9>)"
+
+-- [9 cycles]
+-- |x  x  |x   x    |x  x  |x   x    |x  x  |x   x    |x  x  |x   x    |x  x  
+
+d1 $ s "clap:1(3,8,1)"
+
+drawLine $ "x(3,8,1)"
+
+-- [8 cycles]
+-- |  x  x x|  x  x x|  x  x x|  x  x x|  x  x x|  x  x x|  x  x x|  x  x x
+
+d1 $ s "kick:1(<3 5>,8,2) .  ~ snare "
+
+drawLine $ "x(<3 5>,8,2)"
+
+-- FX 
+-- Tidal has lots of effects we can use to change the way things sound.
+
+-- vowel is a filter which adds a vowel sound
+-- try a, e, i, o and u
+
+d1 $ n "0 1 0 [2 4] 2 4 1*2 3/2?" 
+# squiz "4@3.5 2 0!2"
+# vowel "u@3.5 i e!2"
+# s "cpu" 
+# gain "1.2"
+
+
+d1 $ n "0 1 0 [2 4@2] 2 ~ 1*2 3*12?" # speed "1 2 3 4" 
+# s "cpu" 
+# vowel "a" 
+# shape "0.99"
+
+d1 $ n "0 1 0 [2 4] 2 ~ 1*2 3" # s "cpu" # vowel "o"
+
+-- We can use the mini notation to create sequences of effects too:
+
+d1 $ n "0 1 0 [2 4] 2 ~ 1*2 3@6" # s "cpu" 
+# vowel "a o e" 
+# shape "0.9 0.95"
+# gain "0.9"
+
+-- Tidal does its best to map patterns across to one another.
+
+-- You can add a non-vowel letter to pause the vowel effect
+
+d1 $ n "0 1 0 [2 4] 2 ~ 1*2 3" # s "cpu" 
+# vowel "[a p y o a e i o]/2" 
+# speed "[3 2 0.5]  [2 1 4]  [3.5 3 2]  [0.75 1.5 3]" 
+# squiz "4 3"
+# gain "1.2"
+
+-- 'squiz' is a nice distortion effect
+d1 $ n "0 1 0 [2 4] 2 ~ 1*2 3" 
+# s "cpu" 
+# squiz "4 1 0 3" 
+# shape "0.8" 
+
+-- With '#' structure comes from the left - try swapping the parameters around
+
+d1 $ squiz "4 1 0 3" 
+# shape "0.8!3 0.9 "
+# n "0 1 0 [2 4] 2 ~ 1*2 3" 
+# s "cpu"
+
+-- Now there are only four sounds per cycle, because there's four in the leftmost
+-- 'squiz' pattern
+
+-- We'll learn more about how things in patterns get matched up later!
+
+-- 'gain' changes the volume of different sounds
+
+d1 $ sound "kick kick snare snare" 
+# gain "1 0.7 0.6 0.5" 
+# vowel "a y i" 
+# shape "0.89*3" 
+
+d1 $ sound "[hh*16, kick:8 snare:4 [~ kick:8?0.2] snare]" 
+# gain "[1 1.2]*8" 
+# squiz " 2 3 4 5" 
+
+
+-- speed can be used to pitch samples
+-- (we can also use 'note' to do this, but we'll look at that later)
+
+-- speed changes the speed of playback,
+-- e.g. 2 = play the sample twice as fast - which moves the note up an octave
+
+d1 $ sound "numbers:1 numbers:2 numbers:3 numbers:4" 
+# speed "1 1.5 2 0.5*3?" 
+# vowel "a e i o" 
+# shape "0.7" 
+# gain "0.8"
+
+-- Or we can take the pattern from the speed parameter
+
+
+d1 $ speed "1*2 2*2 4*6 1/5?" # sound "jungbass:6"
+
+-- pan allows us to create stereo effects - 0 = left, 0.5 = middle, 1 = right
+
+d1 $ sound "numbers:1 numbers:2 numbers:3 numbers:4" # pan "0 0.5 1"
+
+-- shape adds distortion (but be careful - it also makes the sound much louder)
+
+d1 $ sound "kurt:4 kurt:4"
+
+d1 $ sound "kurt:4(3,8)" # shape "0 0.98" # gain "0.7"
+
+-- Time to look at Time
+
+-- "Music is the Time of Numbers"
+
+-- setcps - change global tempo
+
+-- Let's run two patterns at once:
+d1 $ n "0 2 [3 5] [4 7]" # sound "cpu"
+
+d2 $ speed "0.5@3.5 3 3@1.5" # n "0(3,8) 8*8" # sound "cpu2"
+  # squiz 5
+
+  
+
+-- Changing the cps (cycles per second) changes everything
+setcps 0.7
+
+setcps 0.3
+
+-- Time as an effect (!)
+
+-- You can also set cps as an effect:
+d2 $ n "0(3,8) 8*8" # sound "cpu2"
+  # squiz 5
+  # cps 0.5
+
+-- It's still global though - setting it on one pattern will
+-- change it everywhere
+
+-- However, you can pattern it:
+d2 $ n "0(3,8) 8*8" # sound "cpu2"
+  # squiz 5
+  # cps "0.9 0.225"
+
+-- You can really mess with time in this way!
+d2 $ n "0 [~ 1] 2*2 3 4*3 5 ~ 7" # sound "cpu2"
+    # cps "<0.5 2> [1 0.75] <2 1>"
+
+-- Reset things before moving on..
+hush
+
+setcps 0.6
+
+-- 'fast' and 'slow' functions
+
+-- You can speed up / slow down an individual
+-- pattern (or part of one) with "fast" and "slow"
+
+
+d1 $ slow 2 $ n "0 2 [3 5] [4 7]" # sound "cpu"
+
+d1 $ fast 2 $ n "0 2 [3 5] [4 7]" # sound "cpu" # cps "0.4*2? 0.3 0.6@2"
+
+-- You can also pattern this speed factor:
+d1 $ slow "0.5 1" $ n "0 2 [3 5] [4 7]" # sound "cpu"
+
+d1 $ slow "0.5 <1 2>" $ n "0 2 [3 5] [4 7]" # sound "cpu"
+
+-- When patterning time in this way, you're switching
+-- between different versions of the pattern, running
+-- at different speeds.
+
+-- We've already learned enough to create patterns with a
+-- lot of variety in them, by mixing together several simple
+-- manipulations
+d1 $ slow "0.5 <1 2>" $
+  n "{0 2 [3 5] [4 <7 6>], 0*2 3*3 0}" # sound "cpu"
+  # squiz "<8 1 2>"
+
+-- Note that the 'speed' effect changes the rate of playback
+-- for each sample, but doesn't change the overall speed of the
+-- pattern
+d1 $ slow "0.5 <1 2>" $
+    n "{0 2 [3 5] [4 <7 6>], 0*2 3*3 0}" # sound "cpu"
+    # squiz "<8 1 2>"
+    # speed 2
+
+-- I find things always sound better if you speed them up a little.
+-- Your experience may vary :)
+setcps 0.7
+
+-- Ok, so what happens when we specify a 'control' pattern (like e.g. n,
+-- sound, speed, or squiz) more than once?
+
+-- Lets start with the handy 'numbers' sounds:
+d1 $ n "0 1 ~ 2" # sound "numbers"
+
+-- lets put than 'n' again, but with a different number:
+d1 $ n "0 1 ~ 2" # sound "numbers" # n "4"
+
+-- So.. you can hear that we still have the rhythmic structure from
+-- the left, but all the values have been replaced with the one on the
+-- right. That's what `#` does!
+
+-- lets make that right hand pattern more complicated:
+d1 $ n "0 1 ~ 2" # sound "numbers" # n "4 5"
+
+-- Now the 0 and 1 have been replaced with the 4, and the 2 has been
+-- replace with the 5.
+
+-- This is because tidal matches them up for you, based on where they
+-- are in the cycle. The 0 and 1 start inside the first half, so are
+-- replaced with '4'. The 2 starts inside the second half, so is
+-- replace by '5'.
+
+-- # is actually shorthand, for '|>'. There's a whole family of these:
+
+-- |> is structure from the left, values from the right
+-- <| is values from the left, structure from the right
+-- |< is structure from the left, values from the left
+-- >| is structure from the right, values from the right
+-- |<| is values from the right, structure from both sides
+-- |>| is values from the left, structure from both sides
+
+-- < points to where the values come from, and | goes on the side where the
+-- rhythmic structure comes from.
+
+-- Everything from the left:
+d1 $ n "0 1 2 3" # sound "numbers" |< n "4 5"
+
+-- Everything from the right:
+d1 $ n "0 1 2 3" # sound "numbers" >| n "4 5"
+
+-- Rhythmic structure from left, values from the right:
+d1 $ n "0 1 2 3" # sound "numbers" |< n "4 5"
+
+-- Values from the left, rhythmic structure from right:
+d1 $ n "0 1 2 3" # sound "numbers" <| n "4 5"
+
+-- Values from the left, rhythmic structure from both sides:
+d1 $ n "0 1 2 3" # sound "numbers" |<| n "4 5"
+
+-- The above use of |<| sounds the same as |<, because the rhythmic
+-- structures line up.
+
+-- This changes 
+d1 $ n "0 1 2" # sound "numbers" |>| n "4 5"
+
+-- Some gotchas!
+
+-- Even though you are taking everything from one side, something
+-- still has to match up on the other side..
+-- So this makes no sound:
+d1 $ n "~" # sound "numbers" >| n "4 5"
+
+-- Only the '4' sounds here:
+d1 $ n "0 ~" # sound "numbers" >| n "4 5"
+
+-- Most of the time you'll be fine forgetting all this, and just using
+-- |> , and its alias # . 
+
+-- However, there are other things you can do!
+
+-- Instead of taking values from one side, you can add the values together, by
+-- using '+' instead of '>' or '<'.
+
+-- This:
+d1 $ n "0 1 2 3" # sound "numbers" |+ n "4 5"
+
+-- adds up to:
+d1 $ n "4 5 7 8" # sound "numbers"
+
+-- This:
+d1 $ n "0 1 2 3" # sound "numbers" +| n "4 5"
+
+-- adds up to:
+d1 $ n "4 7" # sound "numbers"
+
+-- This is because the rhythm comes from the left, from the "4 5", and
+-- so we start from that. The start of 4 matches with 0, and the start
+-- of 5 matches with 2, and adding them up, we end up with 4+0=4, and
+-- 5+2 = 7.
+
+-- This all gets complicated, especially when you work with patterns
+-- with different numbers of steps..
+
+d1 $ n "0 1 2 3" # sound "numbers" |+ n "4 5 6"
+
+-- But don't worry too much. You just have to say what you want to
+-- add together, let Tidal worry about working it out for you!
+
+-- Ok that's enough numbers, lets put this into action with some
+-- interesting patterns.
+
+-- Here's one adding together 'n' patterns, using |+| to take
+-- structure from both sides. On the right hand side, it uses the < >
+-- mininotation syntax to pick a different subsequence per cycle.
+-- The result is an interesting, longer form pattern:
+
+d1 $ n "0 1 2 [3 5]" # sound "cpu"
+  |+| n "<[4 5 3 2] [5 4 3] [6 5]>"
+  # squiz 2
+
+d2 $ n "0 12 10 15 6 2" |*| s "mch"
+d3 $ n "[0*4] . 1 . 4 . 5" # s "mcb"
+d4 $ n "24 20 22/3 26" # s "mcf"
+
+
+-- I just added a bit of squiz there to make it sound nice.
+
+-- Here's a simpler example, cycling between three 12 note octaves, one per cycle:
+do
+d1 $ n "1 -1 [8 13] 6" # sound "superpiano"
+  |+ n "<-12 0 12>" 
+d2 $ n " 12 " # s "mcg"
+d3 $ n " 0*3 . 0(3,8) . 0 . 0*2" # s "mcs" # shape 0.8
+d4 $ n " 10 15 [18 13] 18" # s "mcf" |* n "<-12 0 12>"
+
+-- It's actually possible to apply these to patterns of numbers
+-- _before_ they become control patterns, like this:
+d1 $ n ("7 5 [2 7] 0" |+ "<-12 0 12>") # sound "superpiano"
+  
+-- You have to use parenthesis to make sure the two patterns are added
+-- together, before being passed to the 'n'.
+
+-- To be clear, this is a pattern of numbers:
+-- "7 5 [2 7] 0"
+
+-- This is a control pattern, because 'n' turns numbers into synthesiser
+-- control patterns:
+-- n "7 5 [2 7] 0"
+
+-- This all works for effects too:
+do
+d1 $ n "0(5,8) [4 1]" # sound "drum"
+  # squiz "0 2 5"
+  |+ squiz "<0 2 3>"
+d2 $ every 3 (slow 2) $ n "12(7,8) 10 12" # s "mcs" 
+  # gain 2 
+  # shape 2 |+ squiz "<0 2 3>"
+
+-- Or again, you can add the number patterns, rather than the control
+-- patterns. This is the same:
+d1 $ n "0(5,8) [4 1]" # sound "drum"
+  # squiz ("0 2 5" |+ "<0 2 3>")
+
+-- See which you prefer to do!
+
+-- 'saw' is a pattern that slowly moves from 0 to 1 over a cycle. Here
+-- I'm slowing it down so it lasts 4 cycles, slowing increasing the
+-- speed over that time:
+d1 $ n "[0 4 2] [4 1] 3 [2 0] 3 [3 1] 4 4" # sound "cpu"
+  # squiz 3
+  # speed "1 [2 3] 3"
+  |+ speed (slow 4 saw)
+  
+-- every
+
+-- 'every' is one of a family of Tidal functions, that takes another
+-- function as one of its inputs.
+
+-- Let's say we had a simple pattern like this:
+d1 $ sound "bd sd ~ cp"
+
+-- ... and we wanted to speed it up like this:
+d1 $ fast 2 $ sound "bd sd ~ cp"
+
+-- ... but only one cycle out of three.
+
+-- Here's how we'd use 'every' to do that:
+d1 $ every 3 (fast 2) $ sound "bd sd ~ cp"
+
+
+-- You can read this as "every 3rd cycle, make 'sound "bd sd ~ cp"',
+-- go faster by a factor of two."
+
+-- We'll take this apart to work out why we sometimes use (), and
+-- sometimes '$' later. First, lets look at more, practical examples
+-- of using 'every'.
+
+-- We can use every with any function that takes single pattern as
+-- input (and returns a transformed version as output). For example,
+-- we can use 'hurry' instead of fast:
+d1 $ every 3 (hurry 2) $ sound "bd sd [~ bd] [cp bd*2]"
+
+-- Or use 'rev':
+d1 $ every 3 (rev) $ sound "bd sd [~ bd] [cp bd*2]"
+
+-- Because 'rev' is a single word, we don't actually need to put it in
+-- parenthesis:
+d1 $ every 3 rev $ sound "bd sd [~ bd] [cp bd*2]"
+
+-- Here's a trick with using effects as functions..
+-- Lets look at this:
+d1 $ sound "bd sd [~ bd] [cp bd*2]"
+   # squiz "5"
+
+-- We can treat the '# speed 5' bit as a function. If you think about
+-- it, it does something to a pattern, just like 'fast 2' does.
+
+-- So.. does this work?
+d1 $ every 3 (# squiz 5) $ sound "bd sd [~ bd] [cp bd*2]"
+
+-- Yes it does!
+
+-- You can also add more than one 'every' manipulation, giving them
+-- different periods for their first input, to create longer form
+-- variety:
+d1 $ every 3 (# squiz 5) $ sound "bd sd [~ bd] [cp bd*2]"
+
+d1 $ every 2 (hurry 2) $ every 3 (# squiz 5) $ sound "bd sd [~ bd] [cp bd*2]"
+
+-- keep going..
+d1 $ every 4 rev $ every 2 (hurry 2) $ every 3 (# squiz 5)
+   $ sound "bd sd [~ bd] [cp bd*2]"
+
+-- In Tidal, the pattern that a function is manipulating is generally
+-- its final input, which makes it easy to 'chain together' functions
+-- like this.
+
+-- Ok as promised, lets go back to our original, simple example:
+d1 $ every 3 (fast 2) $ sound "bd sd ~ cp"
+
+-- Lets go through the three 'inputs' (also sometimes called
+-- 'parameters' or 'arguments') for every.
+
+-- [a] 3 - how often a function is applied
+-- [b] fast 2 - the function that is applied
+-- [c] sound "bd sd ~ cp" - the pattern that it's applied to.
+
+-- Looking again at this pattern, you can see that the inputs are
+-- given in three different ways:
+d1 $ every 3 (fast 2) $ sound "bd sd ~ cp"
+
+-- '3' is just on its own. It's a single number so tidal has no
+-- problem knowing it's a single input.
+
+-- 'fast 2' is in parenthesis '(fast 2)'. Then the word 'fast' and
+-- number '2' are grouped together into a function, _before_ being
+-- passed to 'every' as its second input.
+
+-- 'sound "bd sd ~ cp"' has $ in front. We *could* have done this
+-- instead:
+d1 $ every 3 (fast 2) (sound "bd sd ~ cp")
+
+-- That works fine, but '$' does the same kind of job. It passes
+-- what's on its left, to the function on its right, as a single
+-- parameter. '$' has really low priority, which means everything on
+-- its right is worked out first before being passed to the left.
+d1 $ every 3 (fast 2) $ sound "bd sd ~ cp"
+
+-- This saves you from having to match up ( and ) around a function's
+-- final input. It doesn't work with anything other than the final
+-- input, so unfortunately this _doesn't_ work
+
+d1 $ every 3 $ fast 2 $ sound "bd sd ~ cp"
+
+-- The above would work out 'fast 2 $ sound "bd sd ~ cp"' first, and
+-- would then try to pass that to 'every' as its second parameter,
+-- which doesn't make sense to tidal, so it returns an error.
+
+-- Note that when Tidal makes an error, if there was already a
+-- pattern running, it will keep that going. If you're live coding
+-- in front of an audience, you probably don't want an error to
+-- result in silence!
+
+--Cut vs Legato
+--Here's a couple of examples to play with. Note what happens to 
+--the 'bev' sample when you hush and there's nothing to 'cut' it..
+do 
+d1 $ jux rev $ speed "<1 0.5 0.75>(<3 5>,8)" # sound "bev" # cut 1
+  # room 0.4 # sz 0.9 # gain 1.3
+d2 $ jux rev $ sound "sax(3,8)" # legato 1 # n 3 
+  # note "<[9 7] 6 [9 11]>" # djf 0.7 # sz 0.4 # room 0.4 # cut 1
+
+
+--Don't forget that you can also use values other than '1' with legato. 
+--For example, legato 0.5 will play the sound for half a cycle, e.g.:
+
+d1 $ s "sax" # legato 0.5
+
+--and legato 1.5 will cause the sound to overlap with the next cycle, 
+--playing it for 1.5 cycles:
+
+d1 $ s "sax" # legato 1.5
+
+-- slice and splice
+
+setcps 0.6
+
+-- Hear it straight
+d1 $ splice 8 "0 1 2 3 4 5 6 7" $ sound "555fortruth:0"
+
+-- Now with a more messed-up pattern
+do
+d1 $ jux rev $ splice 8 "6 1 [2 3] ~ 4 1 6*2 7" $ sound "555fortruth:0" # gain "1 0.9 0.8 0.7"
+d2 $ n " ~ 1 ~ 1" # s "555fortruth"
+d3 $ n " ~!7 4 ~ ~ ~ 4 ~ ~ ~ ~" # s "555fortruth"
+d4 $ every 2 (rev) $ note "7 ~ ~ 0 ~ ~ 0 ~ ~ 3 ~ ~ ~ 5 ~ ~" # s "555fortruth:3" # shape 0.5 # legato 2.5 |* 3 
+d5 $ n " 5 5 5 5 7 5 5 5 5 5 5 5 5 5*3 5 5 " # s "555fortruth"
+d6 $ every 2 (rev) $ note "7 ~ ~ 0 ~ ~ 0 ~ ~ 3 ~ ~ ~ 5 ~ ~" # s "555fortruth:3" # shape 0.5 
+
+-- Try changing the cps to hear it at different speeds
+setcps 0.3
+
+
+-- Try manipulating the pattern of slices
+d1 $ splice 8 (fast "1 [0.5 0.75]" "6 1 [2 3] ~ 4 1 6*2 7")
+   $ sound "didyChrom136:16" # gain "1 0.9 0.8 0.7" # pan 0.4
+
+-- Now try all the above with 'slice' instead of 'splice'.
+-- Slice _doesn't_ do the pitching up/down thing to splice the
+-- sound to the step.
+
+-- Here I put six slices from a loop originally in 4/4, to create
+-- a 3/4 waltz
+d1 $ splice 8 ("0 1 2 3 4 5") $ sound "didyChrom136:16" 
+d2 $ sound "kick snare*2 clap:4" # speed 2
+
+-- chop and striate
+
+-- Let's take a nice break:
+once $ sound "didyChrom136:16"
+
+-- We can use 'begin' and 'end' to only play part of the sound, in this
+-- case the final quarter of it:
+d1 $ sound "didyChrom136:16" # begin 0.75 # end 1
+
+-- We can also use 'unit "c"' to change the behaviour of 'speed' so it
+-- changes the playback speed to match the cps
+d1 $ sound "didyChrom136:16" # speed 1 # unit "c" # begin 0.75 # end 1
+
+-- Lets play four of those to fill the cycle
+d1 $ sound "didyChrom136:16*4" # speed 1 # unit "c" # begin 0.75 # end 1 # gain 0.6
+
+-- Then play with the cps to hear it change, fitting the cps perfectly
+setcps 0.8
+
+-- Normally, I wouldn't use 'unit', 'begin' and 'end' by hand. Instead
+-- I'd use splice / slice from the previous lesson, or 'chop' to cut
+-- a sound into bits, and set the length of the loop in cycles with
+-- 'loopAt'
+d1 $ loopAt 2 $ chop 4 $ sound "break:8"
+
+-- The above sounds pretty continuous, but it is chopped into four parts.
+-- We can hear that by reversing the chopped up parts:
+d1 $ loopAt 2 $ rev $ chop 4 $ sound "didyChrom136:16"
+
+-- If we slow the pattern we can hear each part separately:
+d1 $ slow 2 $ loopAt 2 $ chop 4 $ sound "didyChrom136:16"
+
+-- Here's a different sample:
+d1 $ slow 2 $ loopAt 2 $ chop 4 $ sound "didyChrom136:17"
+
+-- Now what happens if we put both breaks in the sequence?
+d1 $ slow 2 $ loopAt 2 $ chop 4 $ sound "didyChrom136:16 didyChrom136:17"
+
+-- With 'chop', it will play all the parts of break:8, followed by
+-- all the parts of 'break:9'.
+
+-- If we swap 'chop' for its friend 'striate', then parts from the
+-- two breaks are instead interlaced:
+d1 $ slow 2 $ loopAt 2 $ striate 4 $ sound "didyChrom136:16 didyChrom136:17"
+
+-- Play with that striate value for fun:
+d1 $ slow 2 $ loopAt 2 $ striate 32 $ sound "didyChrom136:16 didyChrom136:17"
+
+-- If you use the *same* loop multiple times with striate, it kind
+-- of stretches it:
+d8 $ slow 4 $ loopAt 1 $ striate 4 $ sound "didyChrom136:16 didyChrom136:17*4" # gain 1.3
+
+-- Here's what that normally sounds like:
+once $ sound "break:1" # shape 0.8 
+
+
+-- 'bev' is an even longer sample..
+d1 $ loopAt 16 $ striate 32 $ sound "didyChrom136:17"
+
+d1 $ slow 4 $ jux rev $ loopAt 16 $ striate 128 $ sound "didyChrom136:17"
+
+
+-- 'Continuous functions' provide different kinds of waveforms.
+
+-- There's a nice graphic showing sine, square, triangle and sawtooth
+
+-- waves here: https://en.wikipedia.org/wiki/Waveform
+
+-- Here's what the sine waveform sounds like applied to sample playback
+
+-- speed:
+
+d1 $ sound "didyChrom136:12*32" # speed sine
+
+
+
+-- and to panning:
+
+d1 $ sound "didyChrom136:6*32" # pan sine
+
+
+
+-- and to waveshape distortion (gets loud):
+
+d1 $ sound "bd*32" # squiz 1.2 # sine
+
+
+
+-- You can manipulate continuous patterns just like other kinds of
+
+-- patterns, for example slowing down:
+
+d1 $ sound "didyChrom136:8*32" # shape (slow 2 sine)
+
+-- The waveforms all move between 0 and 1. So at its lowest point, sine
+
+-- will be 0, and at its highest point it will be 1. Having a value
+
+-- near 0 can be problematic with 'speed', as you can end up with
+
+-- sounds played very slowly that take a long time to complete.
+
+
+
+-- To get around this you can add to the sine:
+
+d1 $ sound "bd*32" # speed (sine + 0.5)
+
+
+
+-- Or use the 'range' function:
+
+d1 $ sound "bd*32" # speed (range 0.5 1.5 sine)
+
+
+
+-- Lets listen to triangle, sawtooth and square waves:
+
+d1 $ sound "bd*32" # speed (range 0.5 1.5 tri)
+
+
+
+d1 $ sound "bd*32" # speed (range 0.5 1.5 saw)
+
+
+
+d1 $ sound "bd*32" # speed (range 0.5 1.5 square)
+
+
+
+-- What happens if you put the continuous pattern on the left?
+
+-- Remember that with '#', the rhythmic structure comes from the
+
+-- left. Try this:
+
+d1 $ speed (range 0.5 1.5 sine) # sound "bd"
+
+
+
+-- Silence! Why's that?
+
+-- It's because continuous functions don't actually contain any
+
+-- events. They have values which continually change, without
+
+-- triggering anything.
+
+
+
+-- If we want to trigger events in a continuous pattern, we have
+
+-- to explicitly sample values from it. One way to do that is with
+
+-- the 'segment' function:
+
+d1 $ speed (segment 32 $ range 0.5 2.5 sine) # sound "bd"
+
+
+
+-- The above samples 32 values per cycle, generating discrete
+
+-- events from them.
+
+
+
+-- Another way to do this is with 'binary' or 'boolean' patterns,
+
+-- using the 'struct' function:
+
+d1 $ speed (struct "t(3,8)" $ slow 2 $ range 0.5 2.5 sine)
+  # sound "bd"
+
+
+
+-- 't' stands for 'true'. So that euclidean rhythm is used to sample
+
+-- events from the continuous sine function. We'll return to
+
+-- binary patterns in another video.
+
+
+
+-- You can also add or multiply continous patterns together:
+
+d1 $ sound "bd*32" # speed (range 0.5 2.5 (sine + (slow 2 saw)))
+
+
+
+d1 $ sound "bd*32" # speed (range 0.5 2.5 (sine * (slow 2 saw)))
+
+
+
+-- I slowed the 'saw' down in the above patterns, so you end
+
+-- up with a sine wave that rises in pitch over two cycles.
+
+
+
+-- In Tidal, random functions are also often continous.
+
+-- For example, rand works like sine, saw etc, but returns random
+
+-- values:
+do
+d1 $ sound "bd(5,8)" # speed (range 1 3 rand)
+d2 $ s "shredda:0" # speed (range 1 10 rand) |* 0.1
+d3 $ n "~ 2 2(2.5,4)?0.3 2*6 3" # s "shredda"
+d4 $ n " ~ 3 5(1,3)!3" # s "shredda" # gain "0.3 0.2 0.5 0.4 1" 
+d5 $ n " 4*8" # s "shredda" # gain "0.1 0.7 0.3 0.2"
+d6 $ note "1 2 3" # s "shredda:1" # room 0.1 # sz (range 0.4 1 perlin) # shape 0.7
+
+
+
+-- Perlin is similar, but returns 'perlin noise'. In Tidal, this
+
+-- means that the pattern smoothly transitions between random values,
+
+-- every cycle:
+
+d1 $ sound "bd(5,8)" # speed (range 1 3 perlin)
+
+
+-- Lets try that with some reverb:
+do
+d1 $ sound "bd(7,16)"
+d2 $ s "~ snare"
+   # room 0.7
+   # sz (range 0.1 0.5 $ slow 4 perlin)
+
+-- 'Continuous functions' provide different kinds of waveforms.
+-- There's a nice graphic showing sine, square, triangle and sawtooth
+-- waves here: https://en.wikipedia.org/wiki/Waveform
+
+-- Here's what the sine waveform sounds like applied to sample playback
+-- speed:
+d1 $ sound "bd*32" # speed sine
+
+-- and to panning:
+d1 $ sound "bd*32" # pan sine
+
+-- and to waveshape distortion (gets loud):
+d1 $ sound "bd*32" # shape sine
+
+-- You can manipulate continuous patterns just like other kinds of
+-- patterns, for example slowing down:
+d1 $ sound "bd*32" # shape (slow 2 sine)
+
+-- The waveforms all move between 0 and 1. So at its lowest point, sine
+-- will be 0, and at its highest point it will be 1. Having a value
+-- near 0 can be problematic with 'speed', as you can end up with
+-- sounds played very slowly that take a long time to complete.
+
+-- To get around this you can add to the sine:
+d1 $ sound "bd*32" # speed (sine + 0.5)
+
+-- Or use the 'range' function:
+d1 $ sound "bd*32" # speed (range 0.5 1.5 sine)
+
+-- Lets listen to triangle, sawtooth and square waves:
+d1 $ sound "bd*32" # speed (range 0.5 1.5 tri)
+
+d1 $ sound "bd*32" # speed (range 0.5 1.5 saw)
+
+d1 $ sound "bd*32" # speed (range 0.5 1.5 square)
+
+-- What happens if you put the continuous pattern on the left?
+-- Remember that with '#', the rhythmic structure comes from the
+-- left. Try this:
+d1 $ speed (range 0.5 1.5 sine) # sound "bd"
+
+-- Silence! Why's that?
+-- It's because continuous functions don't actually contain any
+-- events. They have values which continually change, without
+-- triggering anything.
+
+-- If we want to trigger events in a continuous pattern, we have
+-- to explicitly sample values from it. One way to do that is with
+-- the 'segment' function:
+d1 $ speed (segment 32 $ range 0.5 2.5 sine) # sound "bd"
+
+-- The above samples 32 values per cycle, generating discrete
+-- events from them.
+
+-- Another way to do this is with 'binary' or 'boolean' patterns,
+-- using the 'struct' function:
+d1 $ speed (struct "t(3,8)" $ slow 2 $ range 0.5 2.5 sine)
+  # sound "bd"
+
+-- 't' stands for 'true'. So that euclidean rhythm is used to sample
+-- events from the continuous sine function. We'll return to
+-- binary patterns in another video.
+
+-- You can also add or multiply continous patterns together:
+d1 $ sound "bd*32" # speed (range 0.5 2.5 (sine + (slow 2 saw)))
+
+d1 $ sound "bd*32" # speed (range 0.5 2.5 (sine * (slow 2 saw)))
+
+-- I slowed the 'saw' down in the above patterns, so you end
+-- up with a sine wave that rises in pitch over two cycles.
+
+-- In Tidal, random functions are also often continous.
+-- For example, rand works like sine, saw etc, but returns random
+-- values:
+d1 $ sound "bd(5,8)" # speed (range 1 3 rand) 
+
+-- Perlin is similar, but returns 'perlin noise'. In Tidal, this
+-- means that the pattern smoothly transitions between random values,
+-- every cycle:
+d1 $ sound "bd(5,8)" # speed (range 1 3 perlin)
+
+-- Lets try that with some reverb:
+do
+d1 $ sound "bd(7,16)"
+   # room 0.7
+   # sz (range 0.4 1 $ slow 4 perlin) 
+d2 $ s "~ snare"
+d3 $ n "3!8 " # s "bshihat"
+
+d1 $ silence 
+   -- Let's start with a look at the 'rand' waveform that we
+-- met in the last lesson:
+
+d1 $ n "1*8" # sound "drum"
+  # speed (range 1 8 rand)
+
+-- The 'resetCycles' resets the cycle count to '0', as
+-- though you'd just started Tidal:
+resetCycles
+
+-- If you run resetCycles while the above pattern is running,
+-- you'll notice that you also reset the random stream. You
+-- will always get the same 'random' numbers every time you
+-- start or reset Tidal.
+
+-- You can apply rand to any numerical effect, but might have
+-- to adjust the range. For example with the low pass filter
+-- that cuts out frequencies higher than the given amount:
+do
+d1 $ sound "drum:5(5,8,<0 4>)"
+   # lpf (range 200 8000 rand)
+   # lpq 0.2
+d2 $ s "~ snare"
+
+-- 'irand' is similar to 'rand', but creates integers, or
+-- whole numbers, from 0 up to (and not including) the given
+-- number. This is particularly useful for the 'n' and
+-- 'note' controls:
+
+d3 $ sound "claus(5,8)" # n (irand 32)
+   # room 0.3 # sz 0.5
+
+-- There are a couple of ways of doing random things in the
+-- mininotation too. To randomly choose between subsequences,
+-- put a | (vertical bar) between them
+
+-- The second step in this sequence is a randomly pick from
+-- four subsequences:
+d4 $ n "0 [0|1*3|2*8|3 4 5] 2 3" # sound "cpu"
+   # speed 1.5
+
+-- Also, ? randomly 'drops' an event. In the following the
+-- second step has a 50-50 chance of being played.
+do
+d1 $ sound "kick clap? kick snare"
+  # delay 0.3 # delaytime (1/3) # delayfb 0.8 # speed 1.5
+d2 $ s "~ snare"
+d3 $ sound "claus(5,8)" # n (irand 32)
+   # room 0.3 # sz 0.5
+d4 $ n "0 [0|1*3|2*8|3 4 5] 2 3" # sound "cpu"
+   # speed 1.5
+
+-- (I've added some echo delay to make it sound cool. Delay is the
+-- amount of sound to be delayed, delaytime is the length of the
+-- echo, delayfb is the feedback of the delay into itself)
+
+-- You can adjust the probability of ? working with a decimal
+-- (floating point) number. For example, to have an 80% chance
+-- of dropping that clap (and therefore 20% chance of playing
+-- it)
+d1 $ sound "kick clap?0.8 kick snare"
+  # speed 1.5
+
+-- If you apply ? to a subsequence, it'll work individually
+-- on each value in the subsequence
+d1 $ sound "kick [clap:4 clap:2 clap:5]? kick snare"
+  # speed 1.5
+
+d1 $ sound "bd*8? clap:4"
+
+-- Ok, onward to functions, starting with scramble. scramble
+-- takes a number, which is the number of parts to equally
+-- divide a pattern into. It'll then play those parts at
+-- random.
+d4 $ scramble 4 $ n "0 1 2 3 4 5 6 7" # sound "mch"
+   # room 0.3 # sz 0.8
+
+-- The above is divided into four parts, and there are
+-- eight events in them, so they are played in pairs. This
+-- means that 0 is always followed by 1, 2 is always followed
+-- by 3, and so on.
+
+-- shuffle takes the same parameters as scramble, and sounds
+-- very similar. Can you hear the difference?
+d1 $ shuffle 4 $ n "0 1 2 3 4 5 6 7" # sound "mcb"
+  # room 0.3 # sz 0.8
+
+-- Whereas scramble picks part at random, shuffle plays the
+-- parts in random order. The difference is that with shuffle,
+-- every cycle, you'll hear each part exactly once. With
+-- scramble, there's a (small) chance that you'll hear only
+-- one part, played four times.
+
+
+-- You can maybe hear this better if you play a clap at the
+-- same time, to mark the start of the cycle. Then you can
+-- hear that parts aren't repeating within the cycle.
+d2 $ shuffle 4 $ n "0 1 2 3 4 5 6 7" # sound "mcf"
+  # room 0.3 # sz 0.8
+
+d5 $ sound "clap"
+
+-- The "choose" function is for when you want to pick between
+-- single values. It produces a continuous stream, with no
+-- structure, so the following won't produce any events:
+d2 $ sound (choose ["bd", "arpy", "snare"])
+
+-- You'll need to provide some structure, with a function like
+-- 'segment', which in this case picks 8 values per cycle:
+d1 $ sound (segment 8 $ choose ["bd", "arpy", "snare"])
+
+-- Or 'struct', which picks values according to a binary pattern:
+d1 $ sound (struct "t t ~ t" $ choose ["bd", "arpy", "kick"])
+
+d1 $ sound (struct "t(5,8)" $ choose ["bd", "arpy", "kick"])
+
+-- Or by combining it with a pattern that *does* have structure:
+d1 $ squiz "0*2 4 2 5 0 6*2 4 7"
+  # sound (choose ["bd", "arpy", "kick"])
+
+-- Another 'gotcha' - the parameters to choose are a list of values,
+-- *not*, patterns, so you can't normally use mininotation there.
+
+-- This *won't* work.
+d1 $ squiz "0*2 4 2 5 0 6*2 4 7"
+  # sound (choose ["bd*5", "arpy*2", "kick clap"])
+
+-- I'll try to fix this in a future version of tidal! There is a
+-- workaround, which is to use the 'innerJoin' function. Then you
+-- can choose between patterns:
+d1 $ squiz "0*2 4 2 5 0 6*2 4 7"
+# sound (innerJoin $ choose ["bd*5", "arpy*2", "kick clap"])
+
+-- You can use choose with any parameter.
+
+-- For example:
+d1 $ sound "clap:4(3,8)"
+# speed (choose [2,5,0.5])
+
+-- The following example is a bit different to the above, because
+-- a new value is chosen only once per cycle:
+d1 $ sound "clap:4(3,8)"
+# speed "[2|5|0.5]"
+
+-- You could get the same behaviour from choose with 'segment'ing it
+-- by a cycle:
+d1 $ sound "clap:4(3,8)"
+# speed (segment 1 $ choose [2,5,0.5])
+
+-- The 'wchoose' function is like 'choose', but you can give
+-- a 'weighting' for each possibility. So something with a weighting
+-- of '4' would be twice as likely to be chosen as one with a weighting
+-- of '2', for example:
+d1 $ sound "clap*4" # speed (wchoose [(2, 4), (-2, 2)])
+
+-- The above claps will play either with a speed of '2' , or '-2'.
+-- You can hear that negative speeds cause sounds to play backwards!
+-- '2' has a weighting of '4', and '-2' has a weighting of
+-- '2', so is half as likely to play.
+
+-- Here I've weighted things so you get a lot of kicks, occasional
+-- claps, and rarer snares:
+d1 $ squiz "1 4*8 8*2 0*3"
+  # sound (wchoose [("bd", 8), ("snare", 0.5), ("clap", 1)])
+
+-- Ok one more thing! In Tidal, randomness is "deterministic". At
+-- a certain cycle time, you will always get the same number. We
+-- saw this at the start of the lesson, with resetCycles. That
+-- resets the cycle count, as if you just started Tidal up. You
+-- can then hear that the 'random' numbers are the same.
+
+-- This can result in unexpected results.
+-- Listen to this:
+d1 $ sound "clap*2" # speed (range 0.1 2 rand) # pan rand
+
+-- You can hear that on the left speaker, the 'speed' of the
+-- sound is always low, and when it pans to the right, it's
+-- always high. Strange! This is because the same 'random'
+-- number stream is used for both the speed and the pan, so
+-- they get the same numbers, and seem to interact.
+
+-- This can be nice! But if you don't want this effect, you can
+-- avoid it by manipulating the timeline of one of the random
+-- patterns. For example:
+d1 $ sound "clap*2" # speed (range 0.1 2 rand)
+  # pan (slow 1.001 rand)
+
+-- I only slowed that 'rand' down by a tiny amount, but that's
+-- enough to end up with totally different numbers.. So now
+-- you're as likely to get lower speeds on the left as on the right.
+
+-- randcat
+
+-- randcat is a variant of cat, which we haven't actually looked at
+-- yet, so lets start with that..
+d1 $ sound (cat ["kick snare:4 [~ kick] snare:5", "kick snare:4 . hc(5,8)"])
+
+-- So you can hear that cat 'concatenates' patterns - it plays them
+-- one after the other, in order.
+
+-- randcat on the other hand, plays them in random order:
+d1 $ sound (randcat ["kick snare:4 [~ kick] snare:5", "kick snare:4 . hc(5,8)"])
+
+-- You can give it as many patterns to choose from as you like:
+d1 $ sound (randcat ["kick snare:4 [~ kick] snare:5",
+                     "kick snare:4 . hc(5,8)",
+                     "snare:3(9,16)"
+                    ]
+           )
+
+-- You can use it to randomise control patterns other than sound,
+-- e.g. the vowel effect:
+d1 $ vowel (randcat ["a e*2 i o", "e o u", "o*8"])
+   # sound ("kick snare:4 clap:4")
+
+
+-- wrandcat is to randcat, what wchoose is to choose. That is,
+-- You can give the choices relative probabilities:
+d1 $ sound (wrandcat [("bd sn:4(3,8)", 1),
+                      ("arpy clap", 0.5),
+                      ("cpu(5,8)", 0.25)
+                     ]
+           )
+
+-- stripe is a weird one. Lets start with a rhythm with the
+-- cpu2 samples:
+d1 $ n "0 4*2 ~ 4 2 4 5 ~" # sound "cpu2"
+  # squiz 2
+
+-- 'fast 2' would squeeze that into two cycles:
+d1 $ fast 2 $ n "0 4*2 ~ 4 2 4 5 ~" # sound "cpu2"
+  # squiz 2
+
+-- stripe is similar, but the cycles are random durations,
+-- although still fit the cycle:
+d1 $ stripe 2 $ n "0 4*2 ~ 4 2 4 5 ~" # sound "cpu2"
+  # squiz 2
+
+-- It sounds random, but against a straight clap, you can hear
+-- every other repetition still perfectly aligns with the cycle:
+d2 $ sound "clap:4"
+
+-- degrade - remember the ? mininotation modifier in the previous
+-- video? It drops events at random:
+d1 $ sound "bd*8?"
+
+-- Degrade is a function that does the same:
+d1 $ degrade $ sound "bd*8"
+
+-- Just like this:
+d1 $ sound "bd*8?0.6"
+
+-- You can specify a probability, by using 'degradeBy'. E.g.,
+-- to give each event a 60% chance of being 'lost':
+d1 $ degradeBy 0.6 $ sound "bd*8"
+
+-- 'sometimes' applies a function to a pattern, but only sometimes.
+-- lets hurry this rhythm, but only sometimes:
+d1 $ sometimes (hurry 2) $ n "0 ~ 3 1 5 2 ~ 5" # sound "cpu"
+
+-- Here's the original, which sounds pretty boring in comparison:
+d1 $ n "0 ~ 3 1 5 2 ~ 5" # sound "cpu"
+
+-- You can use it to apply effects as well.
+d1 $ sometimes (# crush 4) $ n "0 ~ 3 1 5 2 ~ 5" # sound "cpu"
+
+-- There's also a 'sometimesBy' variant, for specifying a
+-- probability:
+d1 $ sometimesBy 0.3 (# crush 4) $ n "0 ~ 3 1 5 2 ~ 5" # sound "cpu"
+
+-- There's some aliases for different probabilities:
+
+{-
+sometimes = sometimesBy 0.5
+often = sometimesBy 0.75
+rarely = sometimesBy 0.25
+almostNever = sometimesBy 0.1
+almostAlways = sometimesBy 0.9
+-}
+
+-- So you can do this:
+d1 $ rarely (# crush 4) $ n "0 ~ 3 1 5 2 ~ 5" # sound "cpu"
+
+-- somecycles is similar to sometimes, but works on whole
+-- cycles at a time, rather than individual events:
+d1 $ somecycles (hurry 2) $ n "0 ~ 3 1 5 2 ~ 5" # sound "cpu"
+  # speed 1.5
+
+-- Again, there's a 'somecyclesBy' variant for being specific
+-- about that probability. To apply the squiz, 90% of the time:
+d1 $ somecyclesBy 0.9 (# squiz 4) $ n "0 ~ 3 1 5 2 ~ 5" # sound "cpu"
+  # speed 1.5
+
+-- randslice is a bit like 'slice' that we met a couple of lessons
+-- ago:
+d1 $ slice 4 "0 1 2 3" $ sound "break:8"
+
+-- Instead of taking a pattern of slices though, it picks slices at
+-- random. So to play a random quarter of this break:
+d1 $ randslice 4 $ sound "break:8"
+
+-- We can use 'loopAt' to fit them to a cycle, just like we saw before
+-- with 'chop' and 'striate':
+d1 $ loopAt 1 $ randslice 4 $ sound "break:8*4"
+
+-- We could also do the same sort of thing by giving 'slice' or 'splice'
+-- a random pattern:
+d1 $ splice 4 (segment 4 $ irand 4) $ sound "break:8"
+
+

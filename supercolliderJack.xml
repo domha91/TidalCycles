@@ -1,0 +1,52 @@
+<!DOCTYPE patchbay>
+<patchbay version="0.5.0" name="supercolliderJack">
+ <output-sockets>
+  <socket type="alsa-midi" name="Rubix 1" client="Rubix24" exclusive="off">
+   <plug>Rubix24 MIDI 1</plug>
+  </socket>
+  <socket type="jack-audio" name="PulseAudio JACK Sink 1" client="PulseAudio JACK Sink" exclusive="off">
+   <plug>front-left</plug>
+   <plug>front-right</plug>
+  </socket>
+  <socket type="jack-audio" name="SuperCollider 1" client="SuperCollider" exclusive="off">
+   <plug>out_1</plug>
+   <plug>out_2</plug>
+  </socket>
+  <socket type="jack-audio" name="system 1" client="system" exclusive="off">
+   <plug>capture_1</plug>
+   <plug>capture_2</plug>
+  </socket>
+ </output-sockets>
+ <input-sockets>
+  <socket type="jack-audio" name="PulseAudio JACK Source 1" client="PulseAudio JACK Source" exclusive="off">
+   <plug>front-left</plug>
+   <plug>front-right</plug>
+  </socket>
+  <socket type="alsa-midi" name="Rubix 1" client="Rubix24" exclusive="off">
+   <plug>Rubix24 MIDI 1</plug>
+  </socket>
+  <socket type="jack-audio" name="JACK Input Client 1" client="JACK Input Client" exclusive="off">
+   <plug>in_1</plug>
+   <plug>in_2</plug>
+  </socket>
+  <socket type="jack-audio" name="SuperCollider 1" client="SuperCollider" exclusive="off">
+   <plug>in_1</plug>
+   <plug>in_2</plug>
+  </socket>
+  <socket type="jack-audio" name="system 1" client="system" exclusive="off">
+   <plug>playback_1</plug>
+   <plug>playback_2</plug>
+   <plug>playback_3</plug>
+   <plug>playback_4</plug>
+  </socket>
+ </input-sockets>
+ <slots/>
+ <cables>
+  <cable type="alsa-midi" input="Rubix 1" output="Rubix 1"/>
+  <cable type="jack-audio" input="system 1" output="SuperCollider 1"/>
+  <cable type="jack-audio" input="JACK Input Client 1" output="SuperCollider 1"/>
+  <cable type="jack-audio" input="PulseAudio JACK Source 1" output="SuperCollider 1"/>
+  <cable type="jack-audio" input="SuperCollider 1" output="system 1"/>
+ </cables>
+</patchbay>
+

@@ -1,0 +1,24 @@
+setcps(0.6)
+
+
+do
+d1 $ s "bd sn*2 [hh drum] 808:3" # orbit "0" # gain "1.4"
+d2 $ chunk 4 (hurry 2) $ sound "ht [~ rs] mt [lt ht]" # crush 8 # loop 2 # orbit "0"
+d3 $ rev $ s "<h:2*8 <h:6*12 h:1>>" # vowel "a i i o e i i o" # leslie "0.1 2" # orbit "1"
+d4 $ s "<hh hh:8>*8" # orbit "2"
+d5 $ every 2 (linger 0.25) $ "<miniyeah:4!2 miniyeah:0>*12 miniyeah:2" # pan "0.1 0.2 0.3 0.4 0.5 0.4 0.3 0.2 0.1" # orbit "3"
+
+
+do
+d1 $ plyWith 4 (# gain "0.5 <0.2 . <0.2 1> <1 0.2 0.4>>") $ s "bd cp" # orbit "0"
+d2 $ revArc (3,3) $ s "<hh*16 . <hh:2*8 hh:2*6>> hh*8 <hh:3 hh:7>" # orbit "1"
+d3 $ n (toScale [0, 4, 7] "0 1 2 3 9 4") # sound "supermandolin"
+ # orbit "2"
+d4 $ s "ho" # gain "0.5" # orbit "1"
+d5 $ ply 6 $ s "jungbass" # cut "1" # note "-12*4 7*3 5*2 0*8" # orbit "3"
+d6 $ s "msg:3" 
+
+ 
+
+
+d2 silence

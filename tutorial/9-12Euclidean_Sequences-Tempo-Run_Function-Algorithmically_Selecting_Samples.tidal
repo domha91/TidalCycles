@@ -1,0 +1,82 @@
+--Euclidean Sequences
+--If you give two numbers in parenthesis after an element in a pattern,
+--then Tidal will distribute the first number of sounds equally across 
+--the second number of steps:
+d2 $ sound " ~ hh(8,8) "
+
+d3 $ sound "bd(5,8)"
+d3 $ sound "bd(5,8) sn*2"ˇ
+
+d1 $ sound "arpy" # speed "[1, 1.5]" 
+d1 $ speed "[1 0.5, 1.5 2 3 4]" # sound "arpy" # vowel "a e i e ~"
+--run function
+d1 $ sound "arpy*8" # up (run 8)
+d1 $ sound "arpy*8" # speed (run 8)
+d1 $ up (run 8) # sound "arpy"
+d1 $ sound "arpy*8" # up (every 2 (rev) $ run 8)
+
+--tempo
+--140bpm 4 beats per cycle
+setcps (140/60/4)
+
+--you can also pattern the tempo with the cps control function, for example:
+d1 $ sound "cp(3,8)"# cps (slow 8 $ range 0.8 1.6 saw)
+
+--(Algorithmically) Selecting Samples
+--These two patterns do the same thing.
+d1 $ sound "arpy:0 arpy:2 arpy:3"
+d1 $ n "0 2 3" # s "arpy"
+--These two patterns do the same thing.
+d1 $ sound "arpy:0 arpy:2 arpy:3"
+d1 $ n "0 2 3" # s "arpy"
+--Same thing using samples function using sound parameter.
+d1 $ sound $ samples "drum*4" "0 1 2 3"
+--which is the same as this
+d1 $ sound "drum:0 drum:1 drum:2 drum:3"
+hush
+--Since run generates a pattern of integers, it can be 
+--used with n to automatically “run” through the sample 
+--indices of a folder:
+d1 $ n (run 4) # s "drum"
+d1 $ sound $ samples "drum*4" (run 4) -- or with samples
+
+
+--EUCLIDEAN RHYTHMS LIST
+d2 $ euclid 2 7 $ sound "bd"
+d2 $ sound "bd(2,5) sn*2"--A thirteenth century Persian rhythm called Khafif-e-ramal.
+d2 $ sound "bd(3,4) sn*2"--The archetypal pattern of the Cumbia from Colombia, as well as a Calypso rhythm from Trinidad.
+d2 $ s "bd(3,5,2) sn*2"--Another thirteenth century Persian rhythm by the name of Khafif-e-ramal, as well as a Rumanian folk-dance rhythm.
+d2 $ s "bd(3,7) sn*2"--A Ruchenitza rhythm used in a Bulgarian folk-dance.
+d2 $ s "bd(3,8) sn*2"--The Cuban tresillo pattern.
+d2 $ s "bd(4,7) sn*2"--Another Ruchenitza Bulgarian folk-dance rhythm.
+d2 $ s "bd(4,9) sn*2"-- The Aksak rhythm of Turkey.
+d2 $ s "bd(4,11) sn*2"--(4,11) : The metric pattern used by Frank Zappa in his piece titled Outside Now.
+d2 $ s "bd(5,6) sn*2"--Yields the York-Samai pattern, a popular Arab rhythm.
+d2 $ s "bd(5,7) sn*2"--The Nawakhat pattern, another popular Arab rhythm.
+d2 $ s "bd(5,8) sn*2"--The Cuban cinquillo pattern.
+d2 $ s "bd(5,9) sn*2"--A popular Arab rhythm called Agsag-Samai.
+d2 $ s "bd(5,11) sn*2"--The metric pattern used by Moussorgsky in Pictures at an Exhibition.
+d2 $ s "bd(5,12) sn*2"--The Venda clapping pattern of a South African children’s song.
+d2 $ s "bd(5,16) sn*2"--The Bossa-Nova rhythm necklace of Brazil.
+d2 $ s "bd(7,8) sn*2"--A typical rhythm played on the Bendir (frame drum).
+d2 $ s "bd(7,12) sn*2"--A common West African bell pattern.
+d2 $ s "bd(7,16,14) sn*2"--A Samba rhythm necklace from Brazil.
+d2 $ s "bd(9,16) sn*2"--A rhythm necklace used in the Central African Republic.
+d2 $ s "bd(11,24,14) sn*2"--A rhythm necklace of the Aka Pygmies of Central Africa.
+d2 $ s "bd(13,24,5) sn*2"--Another rhythm necklace of the Aka Pygmies of the upper Sangha.
+
+d2 $ s "drum arpy cp hh" # n (run 10)
+
+d2 $ n (run 10) # s "drum arpy cp hh"  
+
+-- # is shorthand for |> and it combines two patterns
+-- the left-most pattern determines the rhythmic structure of the result
+
+d2 $ pan "0 1 0.25" # sound "bd sn drum arpy"
+
+--play the three samples on every note defined by the up pattern
+d2 $ up "0 0*2 0*4 1" # sound "[arpy, bass2, bd]"
+--using >| operator to make pattern structure come from the right pattern (n)
+d2 $ sound "drum" >|  n "0 1*2 ~ 3"
+--if you put the | on both sides then structure comes from both sides
+d2 $ s "drum cp" |>| n "0 1 2 "

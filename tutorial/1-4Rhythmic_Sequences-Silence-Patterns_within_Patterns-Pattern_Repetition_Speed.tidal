@@ -1,0 +1,47 @@
+--playing a sample
+d1 $ s "bd"
+--selecting a sample (n wraps around)
+d8 $ s "bd:3"
+d9 $ s "~ sn"
+--choosing sample number separately
+d1 $ s "bd" # n "3" 
+
+--silence 
+d8 silence
+
+-- solo
+solo 1
+unsolo 1
+
+do
+d1 $ s "ab:5 808:3"
+d2 $ s "cosmicg*8" 
+    # n "7 8 9 10 11 12 13 14" 
+    # gain "0.65 0.5 0.3 0.2"
+
+
+--Patterns within Patterns
+--Groups inside groups
+d1 $ s "bend*4 [cp [~ cp]] "
+
+do
+d1 $ s "[bd ~ ~ bd] cp [~  ˇbd ] [cp [bd bd:23] ~ [~ bd]]"
+d2 $ s "[hh*8 hh:5 [hh:4 hh]]"
+    # gain "0.1 0.4 1 0.8"
+
+-- . shorthand (feet)
+do 
+d1 $ s "bd ~ ~ bd . cp . ~ bd . . cp . bd bd:23 . ~ . ~ bd "
+d2 $ s "hh*8 hh:5 . hh:4 hh"
+    # gain "0.1 0.4 1 0.8"
+d3 $ s "cp"
+
+-- polyrhythms
+d1 $ s "[ bd bd . bd ~ ~ bd . bd , ~ bin ~ . bin:1 . bin bin ~ ~ bin ~  ]"
+d1 $ s "[bd . bd . bd bd, bin bin:1 . bin ~ bin:1 . bin ~ ~ bin:1 ] "
+
+-- one step per cycle 
+d1 $ s "[ bd:4 . ~ bd:1 , < blue:0 blue:1 > ] * 2"
+
+hush
+ 
