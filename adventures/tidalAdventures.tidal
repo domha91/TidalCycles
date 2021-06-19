@@ -1,0 +1,89 @@
+-- medium.com/@heisterkamp/tidal-adventures-ab627f0ef7c
+tidal_version
+--Test pattern
+d1 $ every 8 (0.25 <~) $ s "bd hh:8*2 bd hh:8" # gain "1 1.4 1 1.4" # pan "0.5 0.1 0.5 0.9"
+
+--Infix Operator ($)
+
+d1 $ s "bd hh arpy"
+
+:t "bd hh arpy"           --Data.String.IsString p => p
+:t sound                  --Pattern String -> ControlPattern
+:t ($)                    --(a -> b) -> a -> b
+:t d1                     --Pattern ValueMap -> IO ()
+
+-- Pattern of strings is handed to sound and a sound control
+-- pattern is handed to d1 which turns the pattern into an IO Stream
+-- which is sent to the output target (e.g. SuperDirt and/or Processing)
+d1 $ fast 2 $ rev $ sound "bd hh arpy" # shape 0.9
+
+:t shape           -- Pattern Double -> ControlPattern
+:t (#)             -- Unionable b => Pattern b -> Pattern b -> Pattern b
+:t "bd hh arpy"    -- Data.String.IsString p => p
+:t sound           -- Pattern String -> ControlPattern
+:t ($)             -- (a -> b) -> a -> b
+:t rev             -- Pattern a -> Pattern a
+:t ($)             -- (a -> b) -> a -> b
+:t fast            -- Pattern Time -> Pattern a -> Pattern a
+:t ($)             -- (a -> b) -> a -> b
+:t d1              -- Pattern ValueMap -> IO ()
+
+--The # Function
+--All # functions must be applied before patterns are converted by $ to 
+--sound control patterns
+d1 $ every 8 (0.25 <~) $ s "bd hh:8*2 [<[63drums:15!3] [63drums:14!5] [63drums:13!6] [63drums:12!7]>] bd hh:8" # gain "1 1.4 1 1.4" # pan "0.5 0.1 0.5 0.9" # shape 0.9
+
+:t shape           -- Pattern Double -> ControlPattern
+:t (#)             -- Unionable b => Pattern b -> Pattern b -> Pattern b
+:t pan             -- Pattern Double -> ControlPattern
+:t (#)             -- Unionable b => Pattern b -> Pattern b -> Pattern b
+:t gain            -- Pattern Double -> ControlPattern
+:t (#)             -- Unionable b => Pattern b -> Pattern b -> Pattern b
+:t "bd hh:8*2 [<[sn!3] [63samples:2!5] [sn!6] [sn!7]>] bd hh:8"  -- Data.String.IsString p => p
+:t s               -- String -> ControlPattern
+:t ($)             -- (a -> b) -> a -> b
+:t (<~)            -- Pattern Time -> Pattern a -> Pattern a
+:t every           -- (Pattern a -> Pattern a) -> Pattern a -> Pattern a
+:t ($)             -- (a -> b) -> a -> b
+:t d1              -- Pattern ValueMap -> IO ()
+
+--TODO: Practice with other operators
+-- |+|
+:t (|+|)           -- (Applicative a, Num b) => a b -> a b -> a b
+-- |-|
+:t (|-|)           -- (Applicative a, Num b) => a b -> a b -> a b
+-- |*|
+:t (|*|)           -- (Applicative a, Num b) => a b -> a b -> a b
+-- |/|
+:t (|/|)           -- (Applicative a, Fractional b) => a b -> a b -> a b
+
+-- Live Code Evaluation
+-- CTRL-ALT-H to hush
+do
+d1 $ s "bd(5,8)"
+d2 $ s "bass*8" # squiz "3 2 1 4"
+d3 $ s "arpy(3,8)" # speed (irand 12)
+
+:t irand      -- Num a => Pattern Int -> Pattern a
+:t speed      -- Pattern Double -> ControlPattern
+
+solo 2
+
+solo 3
+
+mute 2
+
+mute 3
+
+unsolo 2
+
+unsolo 3
+
+unmute 2
+
+unmute 3
+
+:t solo    -- Show a => a -> IO ()
+:t unsolo  -- Show a => a -> IO ()
+:t mute    -- Show a => a -> IO ()
+:t unmute  -- Show a => a -> IO ()

@@ -26,16 +26,22 @@ d1 $ up "0" # s "superfm"
 -- OSC Test
 setcps(90/60/4)
 
+-- GUI Clock
+p "tick" $ "0*4" # s "tick"
+
+resetCycles
+
+
+
 do
 d1 $ s "bd ~ "
 d2 $ s "~ sn"
 d3 $ s "hi lo!7" 
     # squiz 0.2 # sine 
 d4 $ s "hc ho hc ho"
-d5 $ splice 8 " 0 1 2 3 4 5 6 7" $ s "63loops:6"
-    
 
 "bd sn bd sn"::Pattern String
+
 
 do
     setcps(180/60/4)
@@ -44,13 +50,16 @@ do
     -- TODO: How to use 'once' with this for FX
     once $ slow " 0.2 0.5" $ n "0" # s "63samples:11"
     d4 $ n "[35*8 ~]*2" # s "63drums" # vowel "i o"
-    d5 $ s "<63samples:2 63samples:3>/2" # djf "0.2..0.4" 
+    d5 $ splice 8 " 0 1 2 3 4 5 6 7" $ s "63loops:7"
+
 
 
 d4 $ slow "0.5 <1 2>" $ n "[35*8 ~]*2 [20 35*7] [35*12]" # "63drums"
 # vowel "a i e u"
 
-setcps(120/60/4)
+setcps(100/60/4)
+
+do
 d1 $ s "bd sn bd sn"
 d2 $ n "[~ 20]*4" # s "63drums"
 d3 $ n "63"
