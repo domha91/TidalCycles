@@ -1,0 +1,131 @@
+-- Arpeggios
+once $ n "c a f e" # s "supermandolin"
+-- 1 per cycle
+once $ n "<c a f e>" # s "supermandolin"
+-- copy and offset sequence
+once $ n (off 0.125 (|+ 7) "<c a f e>") # s "supermandolin"
+-- add structure to original sequence
+once $ n (off 0.125 (|+ 7) "<c*2 a(3,8) f(3,8,2) e*2") # s "supermandolin" # legato 2
+-- reverse in one speaker
+once $ jux rev $ n (off 0.125 (|+ 7) "<c*2 a(3,8) f(3,8,2) e*2>") # s "supermandolin" # legato 2
+-- add another layer
+once $ jux rev $ n (off 0.125 (|+ 12) $ off 0.125 (|+ 7) ) "<c*2 a(3,8) f(3,8,2) e*2>") #"u" s "supermandolin" # legato 2
+
+-- Arpeggios from chords
+once $ n " c'maj" # s "supermandolin" # legato 2
+-- using arp function
+once $ arp "up" $ n "c'maj" # s "supermandolin" # sustain 0.5
+-- add another note
+once $ arp "up" $ n "c'maj'4" # s "supermandolin" # sustain 0.5
+-- add another chord
+once $ arp "up" $ n "c'maj'4 e'min" # s "supermandolin" # sustain 0.5
+-- change the arpeggiator
+once $ arp "pinkyup" $ n "c'maj'4 e'min" # s "supermandolin" # sustain 0.5
+-- pattern the arpeggiator
+once $ arp "<pinkyup down thumbup up>" $ n "c'maj'4 e'min" # s "supermandolin" # sustain 0.5
+-- change chords, add reverb
+once $ jux rev $ arp "<pinkyup down thumbup up" $ n "<c'maj'4 e4'min'8 f4'maj'4>" # s "supermandolin" # sustain 2 # room "0.3" # sz 0.9
+-- add variety with chunk
+d1 $ chunk 4 (|- note 5) $ jux rev $ 
+  arp "<pinkyup down thumbup up>" $ n "<c'maj'4 e4'min'8 f4'maj'4>" 
+  # s "supermandolin"
+  # sustain 2 # room 0.3 # sz 0.9
+
+--   Rhythms
+once $ s "bd sn"
+-- different snare sample
+once $ s "bd sn:3"
+-- change rhythm
+once $ s "bd*2 [~ sn:3]"
+-- add toms
+once $ s "bd*2 [[~ lt] sn:3] lt:1 [ht mt*2]"
+-- shift quarter cycle every other cycle
+d1 $ every 2 (0.25 <~) $ s "bd*2 [[~ lt] sn:3] lt:1 [ht mt*2]"
+-- pattern shift amount
+d1 $ every 2 ("<0.25 0.125 0.5>" <~) $ s "bd*2 [[~ lt] sn:3] lt:1 [ht mt*2]"
+-- add effects
+d1 $ every 2 ("<0.25 0.125 0.5>" <~) $ s "bd*2 [[~ lt] sn:3] lt:1 [ht mt*2]" 
+  # squiz "<1 2.5 2>"
+  # room (slow 4 $ range 0 0.2 saw)
+  # sz 0.5
+  # orbit 1
+-- more transformation
+d1 $ jux' [id,rev,(# speed 2)] $ every 2 ("<0.25 0.125 0.5>" <~) $ s "bd*2 [[~ lt] sn:3] lt:1 [ht mt*2]" 
+  # squiz "<1 2.5 2>"
+  # room (slow 4 $ range 0 0.2 saw)
+  # sz 0.5
+  # orbit 1
+
+-- Another rhythm
+d1 $ n "0 0 [2 0] [2 3]" # s "feel" # speed 1.5
+-- change pattern
+d1 $ n "0 <0 4> [2 0] [2 3]" # s "feel" # speed 1.5
+-- swap the samples every other cycle
+d1 $ every 2 (rot "<1 3 2>" ) $ n " 0 <0 4> [2 0] [2 3]" # s "feel" # speed 1.5
+-- always worth trying jux rev!!!
+d1 $ jux rev $ every 2 (rot "<1 3 2>" ) $ n " 0 <0 4> [2 0] [2 3]" # s "feel" # speed 1.5
+-- calm it by reducing panning amount
+d1 $ juxBy 0.4 rev $ every 2 (rot "<1 3 2>") $ n "0 <0 4> [2 0] [2 3]" # s "feel" # speed 1.5
+-- vary speed
+d1 $ juxBy 0.4 rev $ every 2 (rot "<1 3 2>") $ n "0 <0 4> [2 0] [2 3]" # s "feel" # speed "1.75 2"
+-- add offset vowel effect and another voice
+d1 $ off 0.25 ( # vowel "<a o i>") 
+  $ juxBy 0.4 rev $ every 2 (rot "<1 3 2>") $ n "0 <0 4> [2 0] [2 3]" # s "feel" # speed "1.75 2"
+
+d2 $ juxBy 0.5 rev $ chunk 4 ((+ speed(1 + sine)) . ply 8) $ note "3(3,8)" # s "bass" # speed "<2 4>" # legato 1
+
+-- Chords
+import Sound.Tidal.Chords
+-- chordList
+chordList
+"major maj aug plus sharp5 six 6 sixNine six9 sixby9 6by9 major7 maj7 
+major9 maj9 add9 major11 maj11 add11 major13 maj13 add13 dom7 dom9
+dom11 dom13 sevenFlat5 7f5 sevenSharp5 7s5 sevenFlat9 7f9 nine 
+eleven 11 thirteen 13 minor min diminished dim 
+minorSharp5 msharp5 mS5 minor6 min6 m6 minorSixNine minor69 min69
+minSixNine m69 mSixNine m6by9 minor7flat5 min7flat5 m7flat5 m7f5 
+minor7 min7 m7 minor7sharp5 min7sharp5 m7sharp5 m7s5 minor7flat9 
+min7flat9 m7flat9 m7f9 minor7sharp9 min7sharp9 m7sharp9 m7s9 
+diminished7 dim7 minor9 min9 m9 minor11 min11 m11 minor13 min13 
+m13 one 1 five 5 sus2 sus4 sevenSus2 7sus2 sevenSus4 7sus4 nineSus4 
+ninesus4 9sus4 sevenFlat10 7f10 nineSharp5 9s5 m9sharp5 m9s5 
+sevenSharp5flat9 7s5f9 m7sharp5flat9 elevenSharp 11s m11sharp m11s"
+-- combining with root note using '
+once $ n "c'maj e'min" # s "supermandolin"
+-- samples tuned to concert C can also be used 
+once $ n "c'maj e'min" # s "gtr"
+-- chord inversions with ' and i (second inversion with ii)
+once $ n "c'major7'ii" # s "gtr"
+-- modifying notes by adding ' plus an int
+once $ n "c'major7'6" # s "gtr"
+-- open voicing by appending 'o to a chord
+once $ n "c'major7'o" # s "gtr"
+-- root can be set as sharp with s and flat with f
+once $ n "cf'maj c'maj cs'maj" # s "gtr"
+-- octave can be set with int, default is 5
+once $ n ("c4'maj c5'maj c6'maj") # s "gtr"
+-- chords can be patterned with |+ 
+once $ n ("c e f" |+ "<'maj 'min>") # s "gtr"
+-- Equivalent
+once $ n("c'maj e'maj f'maj, c'min e'min f'min") # s "gtr"
+
+-- Trigger a pattern from the start
+-- nudge
+d1 $ s "bd*4" # nudge 0.9
+-- nudgeAll
+do
+d1 $ s "bd*4" # nudge 0.9
+d2 $ fast 2 $ s "~ sn" # nudge 0.4
+
+all $ (|+ nudge 0.2)
+nudgeAll 0.2
+
+-- trigger and qtrigger
+d2 $ s "bd hh hh hh"
+d2 $ qtrigger 2 $ s "bd hh hh hh"
+d2 $ trigger 2 $ s "bd hh hh hh"
+
+do
+    resetCycles
+    d1 $ s "bd*4"
+    d2 $ s "~ hh ~ hh*2"

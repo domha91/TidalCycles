@@ -1,0 +1,620 @@
+-- Pattern Structure
+-- + is an alias for |+|
+"2 3" + "4 5 6"
+-- by default, pattern structure comes from both patterns, hence:
+     |  2  |  3  |
++    | 4 | 5 | 6 |
+=    | 6 |7|8| 9 |
+-- structure from the left using |+
+" 2 3 " |+ "4 5 6"
+     |  2  |  3  |
+|+   | 4 | 5 | 6 |
+=    |  6  |  8  |
+-- structure from the right using +|
+" 2 3 " +| " 4 5 6 "
+     |  2  |  3  |
++|   | 4 | 5 | 6 |
+=    | 6 | 7 | 9 |
+
+
+--All operators table 
+--------------------------------------------------------
+-- Function     |      Both          |  Left  |  Right |
+--------------------------------------------------------
+--   Add        |    |+| or +        |  |+    |   +|   |
+--------------------------------------------------------
+-- Subtract     |   |-| or -         |  |-    |   -|   |
+--------------------------------------------------------
+-- Multiply     |   |*| or *         |  |*    |   *|   |
+--------------------------------------------------------
+-- Divide       |   |/| or /         |  |/    |   /|   |
+--------------------------------------------------------
+-- Modulo       |   |%| or %         |  |%    |   %|   |
+--------------------------------------------------------
+-- Left values  |   |<| or <         |  |<    |   <|   |
+--------------------------------------------------------
+-- Right values |   |>| or > or #    |  |>    |   >|   |
+--------------------------------------------------------
+
+--e.g
+
+   |  2  |  3  |
+|> | 4 | 5 | 6 |
+=  |  4  |  5  |
+
+-- Combining control patterns
+
+once $ sound "drum" |+| n " 2 3" |+| n "4 5 6"
+
+--  equivalent to:
+
+once $ sound "drum" + n "6 [7 8] 9"
+
+-- Mini Notation
+
+--  ~
+-- Create a rest
+once $ s " ~ hh"
+
+-- []
+-- Create pattern grouping
+once $ s "[bd sd] hh"
+--  Equivalent to 
+once $ fastcat[s "bd sd", s "hh"]
+
+g = 1.8
+
+do
+d1 $ s "[bd sd] hh!3 bd ~ sd hh!3"
+d2 $ n "~!4 2" # s "ab" # gain g
+
+once $ fastcat[ s "bd sd", s "hh!3", s "bd", s " ~", s "sd", s "hh!3"]
+
+resetCycles
+
+--  .
+-- Shorthand for pattern grouping
+once $ s "bd sd . hh hh hh"
+-- Equivalent
+once $ s "[bd sd] [hh hh hh]"
+
+-- ,
+-- Play multiple patterns at the same time
+once $ s " [bd sd, hh hh hh]"
+-- Equivalent
+once $ stack [s "bd sd", s "hh hh hh"]
+
+-- *
+-- Repeat a pattern
+once $ s "bd*2 sd"
+-- Equivalent
+once $ s "[bd bd] sd"
+
+-- /
+-- Slow down a pattern
+once $ s "bd/2"
+-- Equivalent
+once $ s (slow 2 $ "bd")
+
+-- | 
+-- Create a random choice
+once $ s "[bd | cp | hh]"
+
+-- < >
+-- alternate between patterns
+once $ s "bd <sd hh cp>"
+-- Equivalent
+once $ slow 3 $ s "bd sd bd hh bd cp"
+
+-- !
+-- Replicate a pattern
+once $ s "bd!3 sd"
+-- Equivalent
+once $ s "bd bd bd sd"ˇ
+
+-- _ 
+-- Elongate a pattern
+once $ s "bd _ _ ~ sd _"
+
+-- @
+-- Elongate a pattern
+once $ s "sundance@3 sundance"
+-- Equivalent
+once $ s "sunďance _ _ sundance"
+
+-- ?
+-- Randomly remove events from pattern
+once $ s "bd? sd"
+-- Equivalent
+once $ fastcat [degradeBy 0.5 $ s "bd", s "sd"]
+
+-- :
+-- Selecting samples
+once $ s "bd:4 ~"
+-- Equivalent
+once $ s "bd" # n 4
+
+-- ()
+-- Euclidean sequences
+once $ s "bd(3,8)"
+-- Equivalent
+once $ euclid 3 8 $ s "bd"
+
+-- {}
+-- Polymetric sequences
+once $ s "{bd bd bd bd, cp cp hh}"
+-- Equivalent
+-- 2nd pattern wraps
+once $ stack [s "bd*4", s "cp cp hh cp"]
+
+-- {}%
+-- Polymetric sequence subdivision
+once $ s "{bd cp hh}%8"
+-- Equivalent
+-- Pattern wraps
+once $ s "bd cp hh bd cp hh bd cp"
+
+-- Oscillators
+-- Sine
+once $ s "bd*8" # pan sine
+-- Cosine
+once $ s "bd*8" # pan cosine # speed (sine + 0.5)
+-- Square
+once $ s "bd*8" # pan (cat [square, sine])
+-- Tri
+once $ s "bd*16" # speed (slow 2 $ range 0.5 2 tri)
+-- Saw 
+once $ s "bd*8" # pan (slow 2 saw)
+-- Isaw
+once $ s "bd*8" # pan (slow 2 isaw)
+
+--Non-periodic oscillators
+-- Rand
+once $ s "bd*8" # pan rand
+-- Irand
+once $ s "drum*8" # n (irand 8)
+
+-- Scaling oscillators
+once $ s "bass:5*8" # lpf (range 200 5000 $ sine)
+
+-- Speeding up/down oscillators
+once $ s "bass:5*8" # lpf (slow 4 $ range 200 5000 $ sine)
+
+-- Synthesizers
+
+--Supergong
+once $ n (slow 2 $ fmap (*7) $ run 8)
+  # s "supergong"
+  # decay " [1 0.2]/4"
+  # voice "[0.5 0]/8"
+
+-- Supersquare
+once $ n "<0 -14>" # s "supersquare"
+  # voice 0.2 -- PWM - 0 or 1 = no sound
+  # decay 0.9
+  # accelerate 0.01
+  # semitone 12
+  # resonance 0.2
+  # lfo 0.4
+  # rate 4.5
+  # pitch1 1
+
+-- Supersaw
+once $ every 2 ( slow 2) $ n "12 4 . 2 2 . 4 . 5 " # s "supersaw"
+  # voice 0.2 -- PWM - 0 or 1 = no sound
+  # decay 0.9
+  # accelerate 0.01
+  # semitone 12
+  # resonance 0.2
+  # lfo 0.4
+  # rate 4.5
+  # pitch1 1
+
+--   Superpwm
+once $ n "9 10 12 5" # s "superpwm"
+  # voice 0.2 -- PWM - 0 or 1 = no sound
+  # decay 0.9
+  # accelerate 0.01
+  # semitone 12
+  # resonance 0.2
+  # lfo 0.4
+  # rate 4.5
+  # pitch1 1
+
+-- Superchip
+once $ slow "0 2 4 <5 9> 7 4" $ n "[0 2 4]*64" # s "superchip"
+  # slide 0
+  # rate 1
+  # accelerate 0
+  # pitch2 2
+  # pitch3 3
+  # voice 0.4
+
+--Superhoover
+once $ n "4 5 0 7 9 4 4 3" # s "superhoover"
+  # slide 0
+  # decay 0.2
+  # accelerate 0
+
+-- Superzow
+once $ n "1 8 13 ~ 25 " # s "superzow"
+  # slide 0
+  # decay 0.2
+  # accelerate 0
+  # detune 0.2
+
+-- Supertron
+once $ slow 2 $ n "0 4 5 2 4 5" # s "supertron"
+ # octave 3
+ # accelerate 0
+  # voice 2
+  # detune 0.2 
+
+-- Superreese
+once $ n "-24" # s " superreese"
+  # accelerate 0
+  # voice 0
+  # detune 0
+
+-- Supernoise
+once $ slow 8 $ n "0" # s "supernoise"
+  # voice 0 -- at 0 n controls rate of digital noise, 1 is brown and white.
+  # accelerate 0.2
+  # pitch1 1
+  # slide 1
+  # resonance 0.1
+  # room " 0 0.4"
+
+-- Superstatic
+once $ n "0" # s "superstatic"
+  # voice 1
+  # accelerate 0.2
+  # rate 1
+  # pitch1 0.9
+  # slide 0.4
+  # resonance 0.5
+  # sustain 2
+
+-- Supercomparator
+once $ n "0" # s "supercomparator"
+  # voice 0.5
+  # decay 0.2
+  # accelerate 0.2
+  # resonance 0.5
+  # lfo 1
+  # rate 0.4
+  # pitch1 1
+
+-- Supermandolin
+once $ note "g a " # s "supermandolin" 
+  # sustain 0.6
+  # accelerate 0.3
+  # detune 0.2
+
+-- Superpiano
+once $ note "a a b c a e f" # s "superpiano"
+  # velocity 1 
+  # sustain 2
+  # detune 0.1
+
+-- Superfork
+once $ n " ~ 7 9 11 7 [9 ~ ~ 21]" # s "superfork"
+  # accelerate 0
+
+-- Superhammond
+once $ n "-12 -15 -14 -12 -10 -8" # s "superhammond"
+  -- # perc 1
+  -- # percf 2
+  -- perc, percf and decay are an attempt at the percussion, no idea if it sounds at all 
+  -- reasonable. Vintage Hammonds had percf as 2 or 3 (switchable), two perc levels 
+  -- (maybe roughly 0.7 and 1.2?), and two decay options (roughly 0 and maybe 1ish?)
+  --vibrato, vrate, perc, percf are all new parameters you’ll need to define in Tidal if you want to change them
+  # decay 1
+  # voice 1
+  --Voices are drawbar presets:
+  -- 0: bass violin 16'
+  -- 1: tibia 8"
+  -- 2: bassoon 8’
+  -- 3: french trumpet 8’
+  -- 4: string ensemble
+  -- 5: Blues
+  -- 6: Jazz 1
+  -- 7: Full Shout
+  -- 8: Bro’ Jack
+  -- 9: Jazz 2
+
+--   Supervibe
+once $ n "0 7 <5 8 -4 0> 2" # s "supervibe"
+  # decay 0
+  # velocity 1
+  # accelerate 0
+  # detune 0.2
+
+-- Superfm
+once $ up "0" # s "superfm"
+  # fmamp 1 "3" # fmamp 2 "1" # fmamp 3 "0" # fmamp 4 "0" # fmamp 5 "0" fmamp6 "0" 
+  # fmmod 1 2 "0.5" # fmratio 2 "2" # fmdetune 2 "0" # fmmod 1 3 "0.5" # fmratio 3 "2"
+  # fmmod 2 4 "0.5" # fmmod 3 4 "0.5" # fmratio 4 "0.5" # fmdetune 4 "0"
+  # fmeglevel 1 1 "3" # fmeglevel 1 2 "2" # fmeglevel 1 3 "1" # fmeglevel 1 4 "1"
+  # fmegrate 1 1 "0.5" # fmegrate 1 2 "2" # fmegrate 1 3 "0.5" # fmegrate 1 4 "0.1"
+  # fmeglevel 2 1 "2" # fmeglevel 2 2 "1" # fmeglevel 2 3 "1" # fmeglevel 2 4 "1"
+  # fmegrate 2 1 "10" # fmegrate 2 2 "1" # fmegrate 2 3 "1" # fmegrate 2 4 "1"
+  # fmeglevel 3 1 "3" # fmeglevel 3 2 "1" # fmeglevel 3 3 "1" # fmeglevel 3 4 "1"
+  # fmegrate 3 1 "10" # fmegrate  3 2 "1" # fmegrate 3 3 "1" # fmegrate 3 4 "1"
+  # legato "3"
+
+-- Drum synths
+do
+once $ n "[2 ~ ~ 2 ~ ~ ~ ~ ~ ~ 2 ~ ~ ~ ~ ~]/2" # s "superkick"
+  # accelerate 1
+  # pitch1 1
+  # decay 1
+d2 $ n "[0 ~ ~ 0 ~ ~ ~ ~ ~ ~ 0 ~ ~ ~ ~ ~]/2" # s "super808"
+  # rate 2
+  # voice 0
+d3 $ n " [~ ~ ~ ~ 0 ~ ~ ~ ~ ~ ~ ~ 0 ~ ~ ~]/2" # s "supersnare"
+  # decay 1 
+  # accelerate 0
+d4 $ n " [~ ~ ~ ~ ~ ~ ~ 0 ~ 0 ~ ~ ~ ~ ~ ~]/2" # s "superclap"
+  # delay 0.2
+  # rate 1
+  # pitch1 1
+d5 $ n "[0 1 2 3 4 3 2 1 0 1 2 3 2 1 0 1*3]/2" # s "superhat"
+  # accelerate 1
+
+do
+once $ midinote "[0 ~ ~ 0 ~ ~ ~ ~ ~ ~ 0 ~ ~ ~ ~ ~]/2" # s "soskick"
+  # pitch1 0
+  # voice 1
+  # pitch2 0
+  # speed 0.3
+  # freq 65
+d2 $ n "[0 1 2 3 4 3 2 1 0 1 2 3 2 1 0 1*3]/2" # s "soshats"
+  # resonance 0
+  # pitch1 0
+  # sustain 0.5
+  # freq 220
+d3 $ n "~ ~ 0 0" # s "sostoms"
+  # voice 0.5
+  # sustain 0.5
+  # freq 261.626
+d4 $ n " ~ 0 " # s "sossnare"
+  # voice 0
+  # semitone 9
+  # pitch1 2000
+  # resonance 0.1
+  # freq 500
+d5 $ n "[0 1 2 3 4 3 2 1 0 1 2 3 2 1 0 1*3]/2" # s "superhat"
+  # accelerate 1
+d6 $ slow 4 $ n "0" # s "supersiren"
+  # sustain 1
+d7 $ slow 2 $ s "~ ~ ~ ~ ~ ~ ~ sn:2 ~ ~ ~ sn:1 ~ ~ ~ [sn*3] ~ [ sn:2 sn:3 sn:1 sn:3] ~"
+
+-- Audio Input
+--TODO: Find in example
+-- in
+once $ n "0" # s "in" 
+
+-- TODO: find inr example
+-- inr
+once $ n "0" # s "inr" 
+
+-- Other
+
+-- imp
+once $ n "9 8 2 1" # s "imp"
+  # accelerate 1
+
+-- psin
+once $ n " 2 -2 -4 -8" # s "psin"
+  # accelerate 1
+
+-- pmsin
+once $ n " 2 0 2 3" # s "pmsin"
+  # accelerate 1
+
+--gabor
+once $ n " 2 [1 ~] -2 -4" # s "gabor"
+
+--cyclo
+once $ n "0" # s "cyclo"
+
+-- supergrind
+once $ n "-24" # s "supergrind"
+  # slide 0
+  # decay 1
+  # accelerate 0
+  # rate 1
+
+-- Audio Effects
+
+-- Pitch
+
+-- octer
+once $ n "0 " # s "v" # octer 0.8
+-- octersub
+once $ n "0 " # s "v" # octersub 0.8
+-- octersubsub
+once $ n "0" # s "v" # octersubsub 0.8
+
+-- Frequency Shifter
+
+--fshift
+once $ n "0 1 2" # s "speech" # fshift 100
+--fshiftnote
+once $ n "0" # s "speech" # fshift 100 # fshiftnote 10
+--fshiftphase
+once $ n "0 1 2" # s "speech" # fshift 100 # fshiftnote 10 # fshiftphase 100
+
+-- Ring modulator
+once $ n "0" # s "kurt" # ring 199 # ringf 100 # ringdf 10 
+
+-- Tremelo 
+once $ n "0/4" # s "sitar" # tremolodepth 2 # tremolorate 3.6
+
+--Time and Space
+
+-- Delay
+once $ n "0/2" # s "arp" # delay 0.4 # delayt 0.2 # delayfb 0.8
+
+-- Leslie
+once $ n "0/2" # s "dsynth" # leslie 0.4 # lrate 6.7 # lsize 8ˇ
+
+-- Phaser
+once $ n "0 0" # s "bshihat" # phasr 9.1 # phasdp 199
+
+-- Spectral Delay
+once $ n "0/2" # s "cosmicg" # xsdelay 0.2 # tsdelay 0.8
+
+-- Magnitude Freeze
+once $ n "0/2" # s "electro1:1" # freeze 2
+
+
+-- Envelope
+
+-- ASR Envelope
+
+once $ n "~ 0" # s "sheffield" # att 0.4 # rel 0.3 # gain 1.2ˇ
+
+-- Legato
+once $ n "0 3 4" #  s "arpy" # legato 9.4 ˇ
+
+--Filters
+-- djf
+
+once $ s "[bd sd , hh hh hh hh]" # djf 0.7 # distort 0.4
+
+-- lpf 
+once $ s "[bd sd , hh hh hh hh]" # djf 0.7 # lpf 500 # lpq 0.7 # distort 0.4
+
+-- hpf
+once $ s "[bd sd , hh hh hh hh]" # djf 0.7 # lpf 500 # lpq 0.7 # hpf 200 # hpq 0.4 # distort 0.4
+
+-- bpf
+once $ s "[bd sd , hh hh hh hh]" # bpf 300 # bpq 0.8 # distort 0.4
+
+-- vowel
+once $ s "[bd sd , hh hh hh hh]" # vowel "<[a ~] [e ~] [a ~] [u ~] [i ~]>" # distort 0.4
+
+-- comb
+once $ s "[bd sd , hh hh hh hh]" # vowel "<[a ~] [e ~] [a ~] [u ~] [i ~]>" # comb 0.5 # distort 0.4
+
+-- hbrick
+once $ s "[bd sd , hh hh hh hh]" # vowel "<[a ~] [e ~] [a ~] [u ~] [i ~]>" # comb 0.5 # hbrick 0.3 # distort 0.4
+
+-- lbrick
+once $ s "[bd sd , hh hh hh hh]" # vowel "<[a ~] [e ~] [a ~] [u ~] [i ~]>" # comb 0.5 # lbrick 0.3 # distort 0.4
+
+-- Distortion
+once $ n "0/2" # s "breaks125" # distort 0.5
+
+-- Triode
+once $ n "0/2" # s "breaks125" # triode 1.5
+
+-- shape
+once $ n "0/2" # s "breaks125" # shape 0.5
+
+-- squiz
+once $ n "0/2" # s "breaks125" # squiz 1
+
+-- Bits
+setcps(152/60/4)
+
+-- binshift
+once $ n "0/3" # s "breaks152" # binshift 1
+
+-- scram
+once $ n "0/3" # s "breaks152" # scram 4
+
+-- scram
+once $ n "0/3" # s "breaks152" # crush 3
+
+-- coarse
+once $ n "0/3" # s "breaks152" # coarse 13
+
+-- waveloss
+once $ n "0/3" # s "breaks152" # waveloss 48ˇ
+
+-- krush
+
+once $ n "0/3" # s "breaks152" # krush 30 # kcutoff 300ˇ
+
+-- Other
+
+setcps(165/60/4)
+
+-- smear
+once $ n "0/1" # s "breaks165" # smear 0.6
+
+-- real/img
+once $ n "0/1" # s "breaks165" # smear 0.7 # real 0.5
+
+-- enchance
+once $ n "0/1" # s "breaks165" # smear 0.7 # real 0.5 # enhance 0.3
+
+-- Controls
+once $ note "c d e f g a" # s "<superpiano supersquare supersaw>"
+
+-- Effects
+once $ s "bd hh bd hh*2"
+  # lpf "500 1000 1500"
+  # lpq 0.5
+
+-- Combined
+once $ n "c d e f g a"
+ # s "<superpiano supersquare supersaw>"
+ # lpf "500 1000 1500"
+ # lpq 0.5
+
+-- Tempo
+-- setcps
+setcps(1)
+--  Equivalent
+setcps(120/60/4)
+
+-- cps
+d1 $ s "bd sd(3,8)" # cps (slow 8 $ 0.5 + saw)ˇ
+
+-- Transitions
+d1 $ s "bd(3,8) drum*4"
+xfade 1 $ s "arpy*8" # n (run 8)
+-- Transitioning any pattern
+d3 $ s "bd(3,8)"
+xfade 3 $ s "arpy*4"
+
+p "drums" $ s "bd(3,8) drum*4"
+xfade "drums" $ s "arpy*8" # n (run 8)
+
+-- xfadeIn
+d1 $ s "bd(3,8) drum*4"
+xfade 1 8 $ s "arpy*8" # n (run 8)
+
+-- State Values
+-- Original pattern
+d1 $ slow 2 $ s "alphabet(5,8)" # n "0 .. 4"ˇ
+
+-- Intro
+-- values from circular list
+d1 $ s "alphabet(5,8)" # nTake "stateValue" [0 .. 4]
+-- wait for empty list before change
+d1 $ s "alphabet(5,8)" # nTake "stateValue" [7] 
+-- start
+d1 $ s "alphabet(5,8)" # nTake "stateValue" [0 ..]
+-- restart where it left off
+d1 $ s "alphabet(5,8)" # nTake "stateValue" [0 ..] 
+-- count without a list
+d1 $ s "alphabet(5,8)" # nCount "stateValue"
+-- reset the counter with setF
+setF "stateValue" 0
+-- use counter in other pattern
+d2 $ s "newnotes*16" # n "^stateValue" # gain 1
+-- counting to modulo with nCountTo
+d1 $ struct "t(7,12,3)" $ s "gretsch" # nCountTo "stateValue" 5
+
+--Un-intuitive behaviour
+1 $ struct "t(7,12,3)" $ s "gretsch" # nCountTo "stateValue" "<4 8>"ˇ
+
+-- rev won't reverse the counter
+d1 $ s "newnotes(5,8)" # nCount "stateValue"
+-- the structure is reversed but the notes still go up
+d1 $ rev $ s "newnotes(5,8)" # nCount "stateValue"

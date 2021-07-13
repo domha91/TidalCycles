@@ -242,13 +242,19 @@ d7 $ slow 2 $ s "~ ~ ~ ~ ~ ~ ~ sn:2 ~ ~ ~ sn:1 ~ ~ ~ [sn*3] ~ [ sn:2 sn:3 sn:1 s
 
 d6 $ slow 8 $ n "0" # s "supernoise"
   # voice 0 -- at 0 n controls rate of digital noise, 1 is brown and white.
-  # accelerate 1
+  # accelerate 0.2
   # pitch1 1
   # slide 1
   # resonance 0.1
   # room " 0 0.4"
 
 d6 $ n "0" # s "superstatic"
+  # voice 1
+  # accelerate 0.2
+  # rate 1
+  # pitch1 0.9
+  # slide 0.4
+  # resonance 0.5
   # sustain 2
 
 
