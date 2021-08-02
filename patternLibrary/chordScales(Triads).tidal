@@ -1,0 +1,88 @@
+-- A Aeolian
+d1 $ n "[a'min b'dim c'maj d'min e'min f'maj g'maj ~]/2" # s "supermandolin"
+-- A Avaha Raba
+d1 $ n "[a'maj as'maj cs'dim d'min e'dim f'aug g'min ~]/2" # s "supermandolin"
+-- A Bhairav
+d1 $ n "[a'maj as'aug cs'dim d'maj e'dim fs'min g'min ~]/2" # s "supermandolin"
+-- A Blues Diminished
+d1 $ n "[a'dim bf'dim c'dim cs'dim ds'dim e'dim fs'dim g'dim ~]/2" # s "supermandolin"
+-- A Dorian
+d1 $ n "[a'min b'min c'maj d'maj e'min fs'dim g'maj ~]/2" # s "supermandolin"
+-- A Dorian b5
+d1 $ n "[a'dim b'min c'min d'maj ef'aug fs'dim g'maj ~]/2" # s "supermandolin"
+-- A Dorian b2
+d1 $ n "[a'min bf'aug c'maj d'maj e'dim fs'dim g'min ~]/2" # s "supermandolin"
+-- A Dorico Flamenco
+d1 $ n "[a'maj bf'maj cs'dim d'min e'dim f'aug g'min ~]/2" # s "supermandolin"
+-- A Ethiopian
+d1 $ n "[a'maj b'dim cs'min d'min e'maj f'aug gs'dim ~]/2" # s "supermandolin"
+-- A Harmonic Major 1
+d1 $ n "[a'maj b'dim cs'min d'min e'maj f'aug gs'dim ~]/2" # s "supermandolin"
+-- A Harmonic Major 2, Ionian #5
+d1 $ n "[a'aug b'min cs'maj d'maj f'dim fs'min gs'dim ~]/2" # s "supermandolin"
+-- A Harmonic Minor
+d1 $ n "[a'min b'dim c'aug d'min e'maj f'maj gs'dim ~]/2" # s "supermandolin"
+-- A Harmonic Minor Inverse
+d1 $ n "[a'maj bf'aug cs'dim d'maj e'dim fs'min g'min ~]/2" # s "supermandolin"
+-- A Indian, Phrygian Dim 4th
+d1 $ n "[a'min bf'min c'maj df'aug e'dim f'maj g'dim ~]/2" # s "supermandolin"
+-- A Ionian
+d1 $ n "[a'maj b'min cs'min d'maj e'maj fs'min gs'dim ~]/2" # s "supermandolin"
+-- A Javanese
+d1 $ n "[a'min bf'aug c'maj d'maj e'dim fs'dim g'min ~]/2" # s "supermandolin"
+-- A Jazz Minor Inverse
+d1 $ n "[a'min bf'aug c'maj d'maj e'dim fs'dim g'min ~]/2" # s "supermandolin"
+-- A Jewish Major
+d1 $ n "[a'maj bf'maj cs'dim d'min e'dim f'aug g'min ~]/2" # s "supermandolin"
+-- A Locrian
+d1 $ n "[a'dim bf'maj c'min d'min ef'maj f'maj g'min ~]/2" # s "supermandolin"
+-- A Locrian bb7
+d1 $ n "[a'dim bf'maj c'dim d'min ef'min f'maj gf'aug ~]/2" # s "supermandolin"
+-- A Locrian Natural Major 6th
+d1 $ n "[a'dim bf'aug c'min d'maj ef'maj fs'dim g'min ~]/2" # s "supermandolin"
+-- A Lydian
+d1 $ n "[a'maj b'maj cs'min ds'dim e'maj fs'min gs'min ~]/2" # s "supermandolin"
+-- A Lydian Augmented
+d1 $ n "[a'dim bf'min c'min df'aug ef'maj f'maj g'dim ~]/2" # s "supermandolin"
+-- A Lydian b7th
+d1 $ n "[a'maj b'maj cs'dim ds'dim e'min fs'min g'aug ~]/2" # s "supermandolin"
+-- A Lydian Diminished
+d1 $ n "[a'min b'maj c'aug ds'dim e'maj fs'dim gs'min ~]/2" # s "supermandolin"
+-- A Lydian #2
+d1 $ n "[a'maj c'dim cs'min ds'dim e'aug fs'min gs'maj ~]/2" # s "supermandolin"
+-- A Major
+d1 $ n "[a'maj b'min cs'min d'maj e'maj fs'min gs'dim ~]/2" # s "supermandolin"
+-- A Major Minor
+d1 $ n "[a'maj b'dim cs'dim d'min e'min f'aug g'maj ~]/2" # s "supermandolin"
+-- A Melodic Minor 
+d1 $ n "[a'min b'min c'aug d'maj e'maj fs'dim gs'dim ~]/2" # s "supermandolin"
+-- A Messiaen 2nd Mode
+d1 $ n "[a'dim b'dim c'dim d'dim ef'dim f'dim fs'dim gs'dim]/2" # s "supermandolin"
+-- A Minor
+d1 $ n "[a'min b'dim c'maj d'min e'min f'maj g'maj ~]/2" # s "supermandolin"
+-- A Minor Locrian
+d1 $ n "[a'dim b'dim c'min d'min ef'aug f'maj g'maj ~]/2" # s "supermandolin"
+-- A Minor Melodic
+d1 $ n "[a'min b'min c'aug d'maj e'maj fs'dim gs'dim ~ ]/2" # s "supermandolin"
+-- A Mixolydian
+d1 $ n "[a'maj b'min cs'dim d'maj e'min fs'min g'maj ~]/2" # s "supermandolin"
+-- A Nat Bhairava
+d1 $ n "[a'maj b'dim cs'min d'min e'maj f'aug gs'dim ~]/2" # s "supermandolin"
+-- A Overtone
+d1 $ n "[a'maj b'maj cs'dim ds'dim e'min fs'min g'aug ~]/2" # s "supermandolin"
+-- A Phrygian
+d1 $ n "[a'min bf'maj c'maj d'min e'dim f'maj g'min ~]/2" # s "supermandolin"
+-- A Phrygian Dominant
+d1 $ n "[a'maj bf'maj cs'dim d'min e'dim f'aug g'min ~]/2" # s "supermandolin"
+-- A Pseudo Turkish
+d1 $ n "[a'dim bf'aug c'min d'maj ef'maj fs'dim g'min ~]/2" # s "supermandolin"
+-- A Raga Kuksumakaram
+d1 $ n "[a'maj c'dim cs'min ds'dim e'aug fs'min gs'maj ~]/2" # s "supermandolin"
+-- A Romanian Gnossiennes
+d1 $ n "[a'min b'maj c'maj ds'dim e'min fs'dim g'aug ~]/2" # s "supermandolin"
+-- A Spanish
+d1 $ n "[a'maj bf'maj cs'dim d'min e'dim f'aug g'min ~]/2" # s "supermandolin"
+-- A Spanish Folk
+d1 $ n "[a'maj bf'maj cs'dim d'min e'dim f'aug g'min ~]/2" # s "supermandolin"
+-- A Ultra Locrian
+d1 $ n "[a'dim bf'min c'dim df'aug ef'min f'maj gf'maj ~]/2" # s "supermandolin"

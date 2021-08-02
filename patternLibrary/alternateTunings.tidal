@@ -1,0 +1,87 @@
+
+-- Supercollider Pitch Model
+-- github.com/musikinformatik/SuperDirt/blob/develop/hacks/pitch-model-from-tidal.scd
+let degree = pF "degree"
+    ctranspose = pF "ctranspose"
+    mtranspose = pF "mtranspose"
+    gtranspose = pF "gtranspose"
+    harmonic = pF "harmonic"
+    detune = pF "detune"
+    scalename = pS "scaleName"
+    tuning = pS "tuningName"
+    stepsPerOctave = pI "stepsPerOctave"
+    octaveRatio = pF "octaveRatio"
+
+
+d1 $ slow 2 $ s "gabor*8" # degree "0 1 2 3 4 5 6 7" # scalename "ritusen" # tuning "young"
+
+d1 $ slow 2 $ s "gabor*8" # degree "0 1 2 3 4 5 6 7" # scalename "ritusen" # tuning "just"
+
+
+do
+d1
+  $ degrade
+  $ fast 2
+  $ note ("e4*4" |+ (irand 22 |* (12/22)))
+    # s "63samples:3"
+    # cut 1
+    # sustain 4
+    # gain 1.2
+    # delayfeedback 0.8
+    # delaytime 0.7
+  
+
+-- 22 TET
+do
+  let edo base note = note / base
+  let myscale = toScale $ map (edo 22) [0,2,4,6,8,10,12,14,16,18,20]
+  d1 $ note (scale myscale (irand 8)) # s "63samples:2"
+
+
+let edo a b = note (b*(12/a))
+    scale = getScale (scaleTable ++ [("pythagorean", [0.9,2.04,2.94,4.08,4.98,5.88,7.02,7.92,9.06,9.96,11.11,12]),
+                                     ("partch", [0.215,0.532,0.845,1.117,1.506,1.650,1.824,2.039,2.312,2.669,2.941,3.156,3.474,3.863,4.175,4.351,4.708,4.980,5.195,5.513,5.825,6.175,6.487,6.805,7.020,7.292,7.649,7.825,8.137,8.526,8.849,9.059,9.331,9.688,9.961,10.176,10.350,10.494,10.883,11.155,11.468,11.785,12])
+                                    ])
+    pythagorean a = note (scale "pythagorean" a)
+    partch a = note (scale "partch" a) 
+
+d1 $ partch "0 2 3 4" # s "63samples:3"ˇ # cut 1
+
+
+just2semi j = 12 * (log j) / (log 2)
+newscales = [
+      ("justionian",     map just2semi [1,   9/8,   5/4,   4/3,   3/2,   5/3, 15/8]),
+      ("justdorian",     map just2semi [1,   9/8,   6/5,   4/3,   3/2,   5/3, 16/9]),
+      ("justphrygian",   map just2semi [1, 16/15,   6/5,   4/3,   3/2,   8/5, 16/9]),
+      ("justlydian",     map just2semi [1,   9/8,   5/4, 45/32,   3/2,   5/3, 15/8]),
+      ("justmixolydian", map just2semi [1,   9/8,   5/4,   4/3,   3/2,   5/3, 16/9]),
+      ("justaeolian",    map just2semi [1,   9/8,   6/5,   4/3,   3/2,   8/5, 16/9]),
+      ("justlocrian",    map just2semi [1, 16/15,   6/5,   4/3,   45/32, 8/5, 16/9])]
+scale = getScale (scaleTable ++ newscales)
+
+-- @guiq @nilhartman my scales should work the same as @Membrane’s scales above. map just2semi [...] is plain haskell which changes a list of rational intervals to semitone intervals.
+-- so newscales in my post is just a list of paired (scale_name, list_of_semitone_intervals) which we are going to add to the scale table.
+-- adding+using new scales looks a little weird if you are used to imperative programming. in haskell you can’t just mutate a global scale table and be done with it. 
+-- they way you add new scales is 1) getting the current scale table, 2) concatenating your new scales to it to form the new scale table, and 3) replacing the scale function with a 
+-- new scale function derived from your new scale table. that’s what this line does:
+scale = getScale (scaleTable ++ newscales)
+-- once you have the new scale function, you could do
+my_pattern_of_semitone_intervals = scale "justphrygian" "0 1 2 3 4 5 6 7"
+-- or you could skip the whole scale/getScale/scaleTable thing and use toScale:
+my_pattern_of_semitone_intervals = toScale (map just2semi [1, 16/15, 6/5, 4/3, 3/2, 8/5, 16/9]) "0 1 2 3 4 5 6 7"
+-- either way, now my_pattern_of_semitone_intervals is what it claims to be, just a pattern of numbers which represent the intervals you want in semitones. 
+-- for example you transpose it an octave by adding 12: my_pattern_of_semitone_intervals + 12. you can send it to superdirt as the note param, which is relative to middle C:
+p 1 $ sound "supervibe" <| note my_pattern_of_semitone_intervals # legato 1
+-- or midinote which starts at midi 0:
+p 1 $ sound "supervibe" <| midinote my_pattern_of_semitone_intervals # legato 1
+-- skipping the intermediate step, you might do:
+p 1 $ sound "supervibe" <| note (scale "justphrygian" "0 1 2 3 4 5 6 7") # legato 1
+-- then you can build up more complicated stuff like:
+p 1 $ sound "supervibe" <| note (scale "justphrygian" "<0 1>" + scale "<justphrygian justlydian>" "{0 2 4 6 7}%8" - "{0 12 24}%8")  # legato 3
+
+
+
+let colundi5 = [ xy/33 | x <- [1,2,4,8,16,32], y <- [33, 39.6, 46.2, 52.8, 59.4]]
+colundi6 = [ xy/33 | x <- [1,2,4,8,16,32], y <- [33, 38.5, 44, 49.5, 55, 60.5]]
+colundi7 = [ x*y/33 | x <- [1,2,4,8,16,32], y <- [33, 37.71429, 42.42857, 47.14286, 51.85714, 56.57143, 61.285714]]
+-- (then use toScale tu use it)

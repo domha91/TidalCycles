@@ -1,0 +1,90 @@
+-- min'4 = m maj7
+
+-- A Aeolian
+d1 $ n "[a'min7 b'min7flat5 c'maj7 d'min7 e'min7 f'maj7 g'dom7 ~]/2" # s "supermandolin"
+-- A Avaha Raba ------ RESUME FROM HERE
+d1 $ n "[a'dom7 as'maj7 cs'dim7 d'min'4 e'min7flat5 f'maj7sharp5 g'min7 ~]/2" # s "supermandolin"
+-- A Bhairav
+d1 $ n "[a'dom7 as'maj7sharp5 cs'dim7 d'maj7 e'min7flat5 fs'min7 g'min'4 ~]/2" # s "supermandolin"
+-- A Blues Diminished
+d1 $ n "[a'dim7 bf'dim7 c'dim7 cs'dim7 ds'dim7 e'dim7 fs'dim7 g'dim7 ~]/2" # s "supermandolin"
+-- A Dorian
+d1 $ n "[a'min7 b'min7 c'maj7 d'dom7 e'min7 fs'min7flat5 g'maj7 ~]/2" # s "supermandolin"
+-- A Dorian b5
+d1 $ n "[a'min7b5 b'min7 c'min'4 d'dom7 ef'maj7sharp5 fs'dim7 g'maj7 ~]/2" # s "supermandolin"
+-- A Dorian b2
+d1 $ n "[a'min7 bf'maj7sharp5 c'dom7 d'dom7 e'min7flat5 fs'min7flat5 g'min'4 ~]/2" # s "supermandolin"
+-- A Dorico Flamenco
+d1 $ n "[a'dom7 bf'maj7 cs'dim7 d'min'4 e'min7flat5 f'maj7sharp5 g'min7 ~]/2" # s "supermandolin"
+-- A Ethiopian
+d1 $ n "[a'maj7 b'min7flat5 cs'min7 d'min'4 e'dom7 f'maj7sharp5 gs'dim7 ~]/2" # s "supermandolin"
+-- A Harmonic Major 1
+d1 $ n "[a'maj7 b'min7flat5 cs'min7 d'min'4 e'dom7 f'maj7sharp5 gs'dim7 ~]/2" # s "supermandolin"
+-- A Harmonic Major 2, Ionian #5
+d1 $ n "[a'maj7sharp5 b'min7 cs'dom7 d'maj7 f'dim7 fs'min'4 gs'min7flat5 ~]/2" # s "supermandolin"
+-- A Harmonic Minor
+d1 $ n "[a'min'4 b'min7flat5 c'maj7sharp5 d'min7 e'dom7 f'maj7 gs'dim7 ~]/2" # s "supermandolin"
+-- A Harmonic Minor Inverse
+d1 $ n "[a'dom7 bf'maj7sharp5 cs'dim7 d'maj7 e'min7flat5 fs'min7 g'min'4 ~]/2" # s "supermandolin"
+-- A Indian, Phrygian Dim 4th
+d1 $ n "[a'min7 bf'min'4 c'dom7 df'maj7sharp5 e'dim7 f'maj7 g'min7flat5 ~]/2" # s "supermandolin"
+-- A Ionian
+d1 $ n "[a'maj7 b'min7 cs'min7 d'maj7 e'dom7 fs'min7 gs'min7flat5 ~]/2" # s "supermandolin"
+-- A Javanese
+d1 $ n "[a'min7 bf'maj7sharp5 c'dom7 d'dom7 e'min7flat5 fs'min7flat5 g'min'4 ~]/2" # s "supermandolin"
+-- A Jazz Minor Inverse
+d1 $ n "[a'min7 bf'maj7sharp5 c'dom7 d'dom7 e'min7flat5 fs'min7flat5 g'min'4 ~]/2" # s "supermandolin"
+-- A Jewish Major
+d1 $ n "[a'dom7 bf'maj7 cs'dim7 d'min'4 e'min7flat5 f'maj7sharp5 g'min7 ~]/2" # s "supermandolin"
+-- A Locrian
+d1 $ n "[a'min7flat5 bf'maj7 c'min7 d'min7 ef'maj7 f'dom7 g'min7 ~]/2" # s "supermandolin"
+-- A Locrian bb7
+d1 $ n "[a'dim7 bf'maj7 c'min7flat5 d'min7 ef'min'4 f'dom7 gf'maj7sharp5 ~]/2" # s "supermandolin"
+-- A Locrian Natural Major 6th
+d1 $ n "[a'min7flat5 bf'maj7sharp5 c'min7 d'maj7 ef'maj7 fs'dim7 g'min'4 ~]/2" # s "supermandolin"
+-- A Lydian
+d1 $ n "[a'maj7 b'dom7 cs'min7 ds'min7flat5 e'maj7 fs'min7 gs'min7 ~]/2" # s "supermandolin"
+-- A Lydian Augmented
+d1 $ n "[a'min7flat5 bf'min'4 c'min7 df'maj7sharp5 ef'dom7 f'dom7 g'min7flat5 ~]/2" # s "supermandolin"
+-- A Lydian b7th
+d1 $ n "[a'dom7 b'dom7 cs'min7flat5 ds'min7flat5 e'min'4 fs'min7 g'maj7sharp5 ~]/2" # s "supermandolin"
+-- A Lydian Diminished
+d1 $ n "[a'min'4 b'dom7 c'maj7sharp5 ds'dim7 e'maj7 fs'min7flat5 gs'min7 ~]/2" # s "supermandolin"
+-- A Lydian #2
+d1 $ n "[a'maj7 c'dim7 cs'min'4 ds'min7flat5 e'maj7sharp5 fs'min7 gs'dom7 ~]/2" # s "supermandolin"
+-- A Major
+d1 $ n "[a'maj7 b'min7 cs'min7 d'maj7 e'dom7 fs'min7 gs'min7flat5 ~]/2" # s "supermandolin"
+-- A Major Minor
+d1 $ n "[a'dom7 b'min7flat5 cs'min7flat5 d'min'4 e'min7 f'maj7sharp5 g'dom7 ~]/2" # s "supermandolin"
+-- A Melodic Minor
+d1 $ n "[a'min'4 b'min7 c'maj7sharp5 d'dom7 e'dom7 fs'min7flat5 gs'min7flat5 ~]/2" # s "supermandolin"
+-- A Messiaen 2nd Mode
+d1 $ n "[a'dim7 b'dim7 c'dim7 d'dim7 ef'dim7 f'dim7 fs'dim7 gs'dim7]/2" # s "supermandolin"
+-- A Minor
+d1 $ n "[a'min7 b'min7flat5 c'maj7 d'min7 e'min7 f'maj7 g'dom7 ~]/2" # s "supermandolin"
+-- A Minor Locrian
+d1 $ n "[a'min7flat5 b'min7flat5 c'min'4 d'min7 ef'maj7sharp5 f'dom7 g'dom7 ~]/2" # s "supermandolin"
+-- A Minor Melodic
+d1 $ n "[a'min'4 b'min7 c'maj7sharp5 d'dom7 e'dom7 fs'min7flat5 gs'min7flat5 ~ ]/2" # s "supermandolin"
+-- A Mixolydian
+d1 $ n "[a'dom7 b'min7 cs'min7flat5 d'maj7 e'min7 fs'min7 g'maj7 ~]/2" # s "supermandolin"
+-- A Nat Bhairava
+d1 $ n "[a'maj7 b'min7flat5 cs'min7 d'min'4 e'dom7 f'maj7sharp5 gs'dim7 ~]/2" # s "supermandolin"
+-- A Overtone
+d1 $ n "[a'dom7 b'dom7 cs'min7flat5 ds'min7flat5 e'min'4 fs'min7 g'maj7sharp5 ~]/2" # s "supermandolin"
+-- A Phrygian
+d1 $ n "[a'min7 bf'maj7 c'dom7 d'min7 e'min7sharp5 f'maj7 g'min7 ~]/2" # s "supermandolin"
+-- A Phrygian Dominant
+d1 $ n "[a'dom7 bf'maj7 cs'dim7 d'min'4 e'min7flat5 f'maj7sharp5 g'min7 ~]/2" # s "supermandolin"
+-- A Pseudo Turkish
+d1 $ n "[a'min7flat5 bf'maj7sharp5 c'min7 d'dom7 ef'maj7 fs'dim7 g'min'4 ~]/2" # s "supermandolin"
+-- A Raga Kuksumakaram
+d1 $ n "[a'maj7 c'dim7 cs'min'4 ds'min7flat5 e'maj7sharp5 fs'min7 gs'dom7 ~]/2" # s "supermandolin"
+-- A Romanian Gnossiennes
+d1 $ n "[a'min7 b'dom7 c'maj7 ds'dim7 e'min'4 fs'min7flat5 g'maj7sharp5 ~]/2" # s "supermandolin"
+-- A Spanish
+d1 $ n "[a'dom7 bf'maj7 cs'dim7 d'min'4 e'min7flat5 f'maj7sharp5 g'min7 ~]/2" # s "supermandolin"
+-- A Spanish Folk
+d1 $ n "[a'dom7 bf'maj7 cs'dim7 d'min'4 e'min7flat5 f'maj7sharp5 g'min7 ~]/2" # s "supermandolin"
+-- A Ultra Locrian
+d1 $ n "[aˇ'dim7 bf'min'4 c'min7flat5 df'maj7sharp5 ef'min7 f'dom7 gf'maj7 ~]/2" # s "supermandolin"

@@ -12,49 +12,11 @@ import qualified Sound.OSC.FD as O
 hSetEncoding stdout utf8
 
 -- total latency = oLatency + cFrameTimespan
--- tidal <- startTidal (superdirtTarget {oLatency = 0.1, oAddress = "127.0.0.1", oPort = 57120}) (defaultConfig {cVerbose = True, cFrameTimespan = 1/20})
+-- Send OSC to Supercollder on PC
+-- tidal <- startStream (defaultConfig {cCtrlAddr = "0.0.0.0", cCtrlListen = True, cFrameTimespan = 1/20}) [(superdirtTarget {oAddress = "192.168.1.1", oPort = 57120, oLatency = 0.1 , oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape])]
 
--- Send OSC to Supercollder and Processing on PC
-tidal <- startStream (defaultConfig {cCtrlAddr = "0.0.0.0", cCtrlListen = True}) [(superdirtTarget {oAddress = "192.168.1.1", oPort = 57120, oLatency = 0.3 , oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape]), (superdirtTarget {oAddress = "192.168.1.1", oPort = 2020, oLatency = 0.1, oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape])]
-
--- target = Target {oName = "visualiser", oAddress = "192.168.1.1", oPort = 2020, oLatency = 0.5, oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing }
-         
--- :{
--- let oscplay = OSC "/play" $ ArgList [("s", Nothing),
---                                     ("vowel", Just $ VS "a"),
---                                     ("pan", Just $ VF 0.5),
---                                     ("volume", Just $ VF 1),
---                                     ("cut", Just $ VI 1),
---                                     ("intensity", Just $ VI 0),
---                                     ("sec", Just $ VF 0),
---                                     ("usec", Just $ VF 0),
---                                     ("cps", Just $ VF 0),
---                                     ("cycle", Just $ VF 0),
---                                     ("delta", Just $ VF 0),
---                                     ("scene", Just $ VF 0)]
--- :}
-
--- intensity = pF "intensity"
--- scene = pF "scene"
-
---oscmap = [(superdirtTarget, [superdirtShape])]
---multiple OSC mappings
--- let oscmap = [(target, [oscplay]), (superdirtTarget, [superdirtShape])]
-
--- stream <- startStream (defaultConfig {cCtrlAddr="0.0.0.0"}) oscmap
--- stream <- startStream (defaultConfig {cCtrlListen = False}) oscmap
-
--- Additional OSC messages can be sent with x
--- :{
--- let x1 = streamReplace stream 1
---     x2 = streamReplace stream 2
---     x3 = streamReplace stream 3
---     x4 = streamReplace stream 4
---     x5 = streamReplace stream 5
---     x6 = streamReplace stream 6
---     x7 = streamReplace stream 7
---     x8 = streamReplace stream 8
--- :}
+-- Send OSC to Supercollider & Visuals on PC
+tidal <- startStream (defaultConfig {cCtrlAddr = "0.0.0.0", cCtrlListen = True, cFrameTimespan = 1/10}) [(superdirtTarget {oAddress = "192.168.1.1", oPort = 57120, oLatency = 0.4 , oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape]), (superdirtTarget {oAddress = "192.168.1.1", oPort = 57101, oLatency = 0.4, oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape])]
 
 :{
 let only = (hush >>)
@@ -66,6 +28,7 @@ let only = (hush >>)
     mute = streamMute tidal
     unmute = streamUnmute tidal
     unmuteAll = streamUnmuteAll tidal
+    unsoloAll = streamUnsoloAll tidal
     solo = streamSolo tidal
     unsolo = streamUnsolo tidal
     once = streamOnce tidal
@@ -121,6 +84,19 @@ let setI = streamSetI tidal
     setS = streamSetS tidal
     setR = streamSetR tidal
     setB = streamSetB tidal
+:}
+
+:{
+let degree = pF "degree"
+    ctranspose = pF "ctranspose"
+    mtranspose = pF "mtranspose"
+    gtranspose = pF "gtranspose"
+    harmonic = pF "harmonic"
+    detune = pF "detune"
+    scalename = pS "scaleName"
+    tuning = pS "tuningName"
+    stepsPerOctave = pI "stepsPerOctave"
+    octaveRatio = pF "octaveRatio"
 :}
 
 :set prompt "tidal> "
