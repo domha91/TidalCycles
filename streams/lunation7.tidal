@@ -18,4 +18,13 @@ d4 $ n "1 ~ ~ 2 ~ ~ ~ ~ ~ 0" # s "JIIoStPn" # cut 4
 do
 d1 $ loopAt 8 $ chop 8 $ s "JIIoDrums" # room 0.4
 d2 $ striate 32 $ s "<JIIoStPn:2 JIIoStPn:1>" # pan perlin 
-d3 $ chunk 4 (# speed 2 ) $ s "JIIoLead"
+
+
+-- TODO: add flanger/phaser
+do 
+    d1 $ loopAt 8 $ chop 4 $ n "0 1 2 3" # s "JIIoDrums" # cut 1
+    d2 $ striate 32 $ s "<JIIoStPn:2 JIIoStPn:1>" # pan perlin
+    d3 $ chop 6 $ degrade $ n "[1 ~ 4 5]/4 " # s "JIIoLead" 
+        # cut 2
+    d4 $ chop 16 $ n "[1 ~ ~ ~]/4 " # s "JIIoChrds" # cut 3
+    

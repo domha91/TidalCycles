@@ -16,7 +16,7 @@ hSetEncoding stdout utf8
 -- tidal <- startStream (defaultConfig {cCtrlAddr = "0.0.0.0", cCtrlListen = True, cFrameTimespan = 1/20}) [(superdirtTarget {oAddress = "192.168.1.1", oPort = 57120, oLatency = 0.1 , oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape])]
 
 -- Send OSC to Supercollider & Visuals on PC
-tidal <- startStream (defaultConfig {cCtrlAddr = "0.0.0.0", cCtrlListen = True, cFrameTimespan = 1/10}) [(superdirtTarget {oAddress = "192.168.1.1", oPort = 57120, oLatency = 0.4 , oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape]), (superdirtTarget {oAddress = "192.168.1.1", oPort = 57101, oLatency = 0.4, oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape])]
+tidal <- startStream (defaultConfig {cCtrlAddr = "0.0.0.0", cCtrlPort= 6010, cCtrlListen = True, cFrameTimespan = 1/10}) [(superdirtTarget {oAddress = "192.168.1.1", oPort = 57120, oLatency = 0.4 , oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape]), (superdirtTarget {oAddress = "192.168.1.1", oPort = 57101, oLatency = 0.4, oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape])]
 
 :{
 let only = (hush >>)

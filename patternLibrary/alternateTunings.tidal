@@ -1,6 +1,7 @@
 
 -- Supercollider Pitch Model
 -- github.com/musikinformatik/SuperDirt/blob/develop/hacks/pitch-model-from-tidal.scd
+
 let degree = pF "degree"
     ctranspose = pF "ctranspose"
     mtranspose = pF "mtranspose"
