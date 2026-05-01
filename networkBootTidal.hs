@@ -4,14 +4,24 @@
 import Sound.Tidal.Context
 
 import System.IO (hSetEncoding, stdout, utf8)
+
+import qualified Control.Concurrent.MVar as MV
+import qualified Sound.Tidal.Tempo as Tempo
+import qualified Sound.OSC.FD as O
+
 hSetEncoding stdout utf8
 
 -- total latency = oLatency + cFrameTimespan
--- LOCAL boot
-tidal <- startTidal (superdirtTarget {oLatency = 0.1, oAddress = "127.0.0.1", oPort = 57120}) (defaultConfig {cVerbose = True, cFrameTimespan = 1/20})
+-- Send OSC to Supercollder on PC
+tidal <- startStream (defaultConfig {cCtrlAddr = "0.0.0.0", cCtrlPort = 6010, cCtrlListen = True, cFrameTimespan = 1/20}) [(superdirtTarget {oAddress = "192.168.1.1", oPort = 57120, oLatency = 0.1 , oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape])]
 
--- NETWORK boot (send OSC to PC at 192.168.1.1)
--- tidal <- startStream (defaultConfig {cCtrlAddr = "0.0.0.0", cCtrlPort = 6010, cCtrlListen = True, cFrameTimespan = 1/20}) [(superdirtTarget {oAddress = "192.168.1.1", oPort = 57120, oLatency = 0.1, oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape])]
+-- Send OSC to Supercollider & Visuals on PC
+-- startStream
+-- tidal <- startStream (defaultConfig {cCtrlAddr = "0.0.0.0", cCtrlPort = 6010, cCtrlListen = True, cFrameTimespan = 1/20}) [(superdirtTarget {oAddress = "192.168.1.1", oPort = 57120, oLatency = 0.1 , oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape]), (superdirtTarget {oAddress = "192.168.1.1", oPort = 3333, oLatency = 0.02, oSchedule = Live, oWindow = Nothing, oHandshake = False, oBusPort = Nothing}, [superdirtShape])]
+
+
+
+
 
 :{
 let only = (hush >>)
@@ -23,6 +33,7 @@ let only = (hush >>)
     mute = streamMute tidal
     unmute = streamUnmute tidal
     unmuteAll = streamUnmuteAll tidal
+    unsoloAll = streamUnsoloAll tidal
     solo = streamSolo tidal
     unsolo = streamUnsolo tidal
     once = streamOnce tidal
@@ -32,8 +43,11 @@ let only = (hush >>)
     all = streamAll tidal
     resetCycles = streamResetCycles tidal
     setcps = asap . cps
-    getcps = streamGetcps tidal
-    getnow = streamGetnow tidal
+    getcps = do tempo <- MV.readMVar $ sTempoMV tidal
+                return $ Tempo.cps tempo
+    getnow = do tempo <- MV.readMVar $ sTempoMV tidal
+                now <- O.time
+                return $ fromRational $ Tempo.timeToCycles tempo now
     xfade i = transition tidal True (Sound.Tidal.Transition.xfadeIn 4) i
     xfadeIn i t = transition tidal True (Sound.Tidal.Transition.xfadeIn t) i
     histpan i t = transition tidal True (Sound.Tidal.Transition.histpan t) i
@@ -67,10 +81,6 @@ let only = (hush >>)
     d14 = p 14 . (|< orbit 13)
     d15 = p 15 . (|< orbit 14)
     d16 = p 16 . (|< orbit 15)
-    
-    timbre       = pF "timbre"
-    vibratoDepth = pF "vibratoDepth"
-    scaleName    = pS "scaleName"
 :}
 
 :{
@@ -79,6 +89,19 @@ let setI = streamSetI tidal
     setS = streamSetS tidal
     setR = streamSetR tidal
     setB = streamSetB tidal
+:}
+
+:{
+let degree = pF "degree"
+    ctranspose = pF "ctranspose"
+    mtranspose = pF "mtranspose"
+    gtranspose = pF "gtranspose"
+    harmonic = pF "harmonic"
+    detune = pF "detune"
+    scalename = pS "scaleName"
+    tuning = pS "tuningName"
+    stepsPerOctave = pI "stepsPerOctave"
+    octaveRatio = pF "octaveRatio"
 :}
 
 :set prompt "tidal> "
