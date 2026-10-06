@@ -1,0 +1,319 @@
+-- ============================================================
+-- loops.tidal
+-- Renaissance Counterpoint Live Performance System
+-- Deliverable 6: Audio Loop System
+-- Location: /media/projects/TidalCycles/loops.tidal
+--
+-- This file covers:
+--   A. Folder structure and naming conventions
+--   B. How loops load into SuperDirt (startup.scd handles this)
+--   C. Basic loop triggering in Tidal
+--   D. Slicing — chop, striate, splice
+--   E. Speed-based pitch correction for melodic loops
+--   F. Stretch goal: per-slice microtonal annotation
+--
+-- FOLDER STRUCTURE (create with the shell script below):
+--
+--   /media/projects/Audio/Samples/
+--     loops-drone/
+--       001_A_drone_tonic.wav        sustained root drone
+--       002_A_drone_fifth.wav        sustained fifth drone
+--       003_G_drone_bagpipe.wav      bagpipe-style open fifth
+--       004_D_drone_viol.wav         viol consort held chord
+--     loops-rhythmic/
+--       001_tabor_pavane_60bpm.wav   tabor pattern at 60 bpm
+--       002_tabor_galliard_80bpm.wav tabor pattern at 80 bpm
+--       003_framedrum_est_100bpm.wav frame drum estampie
+--       004_nakers_fanfare.wav       nakers fanfare accent
+--     loops-melodic/
+--       001_recorder_pavane_A.wav    recorder melody strain A
+--       002_fiddle_galliard_A.wav    fiddle galliard strain A
+--       003_viol_consort_slow.wav    four-part viol texture
+--       004_lute_allemande.wav       lute allemande pattern
+--     loops-ambient/
+--       001_hall_reverb_tail.wav     long reverb tail for crossfades
+--       002_crowd_murmur.wav         ambient audience texture
+--       003_wind_exterior.wav        outdoor ambience
+--       004_church_atmos.wav         stone room atmosphere
+--     prepared/
+--       (your own compositions go here, any format SuperDirt reads)
+--
+-- NAMING CONVENTION:
+--   NNN_<root>_<description>_<bpm>bpm.wav
+--   NNN    = three-digit index (SuperDirt uses this as the sample number)
+--   <root> = pitch root if melodic (A, D, G, etc.) or "X" if none
+--   <bpm>  = tempo if rhythmic, omit if drone/ambient
+--
+-- FILE FORMAT:
+--   WAV or AIFF, 48000 Hz (matches JACK), 24-bit minimum.
+--   Stereo preferred. Mono files are fine — SuperDirt handles them.
+--   Loop points: for sustained drones, export seamlessly looped.
+--   For rhythmic loops: trim exactly to bar boundaries at target bpm.
+--
+-- SHELL SCRIPT — run once to create folders:
+--   bash /media/projects/TidalCycles/setup_loops.sh
+-- ============================================================
+
+
+-- ============================================================
+-- A. BASIC LOOP TRIGGERING
+-- ============================================================
+-- Once startup.scd has loaded the sample banks, each folder
+-- name becomes a Tidal sound name. Sample index 0 = first file
+-- alphabetically in the folder.
+--
+-- The folder loads are in startup.scd:
+--   ~dirt.loadSoundFiles("/media/projects/Audio/Samples/loops-drone/*");
+--   etc.
+--
+-- After loading, these names are available in Tidal:
+--   s "loops-drone"    s "loops-rhythmic"
+--   s "loops-melodic"  s "loops-ambient"
+--   s "prepared"
+
+-- Trigger the first drone loop (index 0), loop it indefinitely.
+-- The loop plays at its native pitch and speed.
+-- d8 $ s "loops-drone" # n 0 # gain 0.65 # pan 0.5
+
+-- Trigger a specific file by index:
+-- d8 $ s "loops-drone" # n 2 # gain 0.6     -- third file in folder
+
+-- Cycle through all drone loops:
+-- d8 $ s "loops-drone" # n "<0 1 2 3>" # gain 0.6
+
+
+-- ============================================================
+-- B. SPEED — PITCH SHIFTING LOOPS
+-- ============================================================
+-- SuperDirt plays audio loops at their native speed by default.
+-- The # speed parameter shifts pitch and playback rate together:
+--   speed 1.0   = original pitch
+--   speed 2.0   = one octave up (plays twice as fast)
+--   speed 0.5   = one octave down (plays half as fast)
+--   speed (-1.0) = reversed, original pitch
+--
+-- For transposing a loop to a target pitch:
+--   speed = targetFreq / sourceFreq
+--
+-- Example: a drone recorded on A (440 Hz), transpose to D (293.66 Hz):
+--   speed = 293.66 / 440.0 = 0.6674
+--
+-- These speed values are pre-calculated for common transpositions
+-- from an A-root loop (sourceFreq = 440 Hz):
+
+:{
+let speedToC   = 261.626 / 440.0   -- 0.5946: A → C  (down major third)
+    speedToD   = 293.66  / 440.0   -- 0.6674: A → D  (down minor third)
+    speedToE   = 329.63  / 440.0   -- 0.7492: A → E  (down a fourth)
+    speedToF   = 349.23  / 440.0   -- 0.7937: A → F  (down tritone)
+    speedToG   = 392.0   / 440.0   -- 0.8909: A → G  (down major second)
+    speedToA   = 1.0               --         A → A  (unison)
+    speedToB   = 493.88  / 440.0   -- 1.1225: A → B  (up major second)
+    speedUpOct = 2.0               --         one octave up
+    speedDnOct = 0.5               --         one octave down
+:}
+
+-- Usage example — play drone loop 0, transposed to G:
+-- d8 $ s "loops-drone" # n 0 # speed speedToG # gain 0.6
+
+-- Reverse a loop for dramatic effect:
+-- d8 $ s "loops-drone" # n 0 # speed (-1.0) # gain 0.5
+
+
+-- ============================================================
+-- C. CHOP — DIVIDE LOOP INTO N EQUAL SLICES
+-- ============================================================
+-- chop n divides the loop into n equal-duration slices and
+-- plays them in sequence at the original tempo. This creates
+-- a granular-style re-sequencing of the loop content.
+-- Good for rhythmic loops where you want to rearrange beats.
+--
+-- chop does NOT pitch-shift. Use # speed for pitch.
+
+-- Chop a rhythmic loop into 8 slices, play in order:
+-- d8 $ chop 8 $ s "loops-rhythmic" # n 0 # gain 0.7
+
+-- Chop and reverse:
+-- d8 $ rev $ chop 8 $ s "loops-rhythmic" # n 0
+
+-- Chop and shuffle slices randomly:
+-- d8 $ chop 8 $ shuffle 4 $ s "loops-rhythmic" # n 0
+
+-- Chop into 16, play every other slice (creates half-time feel):
+-- d8 $ every 2 (fast 2) $ chop 16 $ s "loops-rhythmic" # n 0
+
+
+-- ============================================================
+-- D. STRIATE — INTERLEAVE SLICES ACROSS TIME
+-- ============================================================
+-- striate n is like chop but distributes slices across the cycle
+-- rather than playing them sequentially from the start.
+-- Creates a more textural, granular effect — excellent for
+-- ambient and drone loops.
+--
+-- striate 4: divides loop into 4, plays slice 0 at beat 1,
+--            slice 1 at beat 2, slice 2 at beat 3, slice 3 at beat 4.
+-- Increasing n creates smoother, more continuous texture.
+
+-- Striate a drone loop into 32 slices — smooth granular bed:
+-- d8 $ striate 32 $ s "loops-ambient" # n 0 # gain 0.55
+
+-- Striate with speed variation across slices (pitch scatter):
+-- d8 $ striate' 16 (1/16) $ s "loops-drone" # n 0
+
+-- Layer two striated drones at different speeds:
+:{
+let loop_ambient_layer =
+      stack [
+        striate 32 $ s "loops-ambient" # n 0 # gain 0.5 # speed 1.0,
+        striate 32 $ s "loops-ambient" # n 0 # gain 0.4 # speed 0.75
+      ]
+:}
+
+
+-- ============================================================
+-- E. SPLICE — ACCURATE SLICE TRIGGERING
+-- ============================================================
+-- splice n chops the loop into n slices and scales each slice
+-- to fill its time slot (time-stretches to fit the pattern grid).
+-- More CPU-intensive than chop but maintains rhythmic grid alignment
+-- regardless of the loop's original tempo.
+--
+-- Use splice when a loop was recorded at a different tempo than
+-- the current setcps and you want beats to stay in sync.
+
+-- Splice a tabor loop recorded at 80 bpm into the current tempo:
+-- d7 $ splice 8 $ s "loops-rhythmic" # n 1 # gain 0.6
+
+-- Splice and restructure beats:
+-- d7 $ splice 8 "[0 3 1 2 4 7 5 6]" $ s "loops-rhythmic" # n 1
+
+
+-- ============================================================
+-- F. LOOPING WITH LEGATO
+-- ============================================================
+-- For seamless looping of a full sample:
+--   # legato 1.0   — holds each note exactly to its next onset
+--   # sustain (large value) — holds longer than one cycle
+--   # loop 1       — tells SuperDirt to loop the sample
+
+-- Seamless drone loop — plays full file in a loop:
+-- d6 $ s "loops-drone" # n 0 # loop 1 # gain 0.6 # legato 4
+
+
+-- ============================================================
+-- G. COMPLETE LOOP PERFORMANCE PATTERNS
+-- ============================================================
+-- These are ready-to-use patterns for d8 during performance.
+-- Assign them to slot_8_N in BootTidal.hs.
+
+-- Ambient atmospheric bed (slot 8 / 1)
+:{
+let loop_ambient_bed =
+      striate 32
+      $ s "loops-ambient"
+      # n 0
+      # gain 0.5
+      # speed 1.0
+      # pan 0.5
+:}
+
+-- Drone root loop (slot 8 / 2)
+:{
+let loop_drone_root =
+      s "loops-drone"
+      # n 0
+      # loop 1
+      # gain 0.6
+      # speed 1.0
+      # legato 8
+:}
+
+-- Drone fifth (slot 8 / 3) — matches drone root, a fifth higher
+:{
+let loop_drone_fifth =
+      s "loops-drone"
+      # n 0
+      # loop 1
+      # gain 0.5
+      # speed (3/2)    -- raise by a just fifth
+      # legato 8
+:}
+
+-- Rhythmic loop, chopped 8 slices (slot 8 / 4)
+:{
+let loop_rhythmic_8 =
+      chop 8
+      $ s "loops-rhythmic"
+      # n 0
+      # gain 0.65
+:}
+
+-- Melodic fragment loop — transposed to current mode root (slot 8 / 5)
+:{
+let loop_melodic_frag =
+      s "loops-melodic"
+      # n 0
+      # loop 1
+      # gain 0.6
+      # speed 1.0
+      # legato 4
+:}
+
+-- Reversed ambient tail — for section endings (slot 8 / 6)
+:{
+let loop_reversed_tail =
+      s "loops-ambient"
+      # n 0
+      # speed (-0.5)
+      # gain 0.45
+      # legato 8
+:}
+
+-- Granular texture from melodic loop (slot 8 / 7)
+:{
+let loop_granular =
+      striate 64
+      $ s "loops-melodic"
+      # n 0
+      # gain 0.45
+      # speed (choose [0.5, 0.75, 1.0, 1.5])
+:}
+
+-- ============================================================
+-- H. STRETCH GOAL: PER-SLICE MICROTONAL ANNOTATION
+-- ============================================================
+-- If a melodic loop contains known pitches at specific slices,
+-- you can annotate each slice's source pitch and retune it
+-- to a target frequency using speed = targetFreq / sourceFreq.
+--
+-- This requires knowing the pitch content of each slice.
+-- Best approached by:
+--   1. Analysing the loop offline (Sonic Visualiser + NNLS Chroma)
+--   2. Writing the sourceFreqs as a list
+--   3. Dividing targetFreq by each sourceFreq to get a speed pattern
+--
+-- Example: a 4-slice recorder loop with pitches A4 C#5 E5 A5
+--          (source freqs: 440, 554.37, 659.26, 880)
+--          Target: retune to D Dorian root, so target D4 = 293.66 Hz
+
+:{
+let sourceFreqs  = [440.0, 554.37, 659.26, 880.0]
+    targetFreq   = 293.66
+    sliceSpeeds  = map (\sf -> targetFreq / sf) sourceFreqs
+    -- sliceSpeeds = [0.6674, 0.5297, 0.4454, 0.3338]
+    speedPattern = listToPat sliceSpeeds
+    loop_pitched_slices =
+      chop 4
+      $ s "loops-melodic"
+      # n 0
+      # speed speedPattern
+      # gain 0.65
+:}
+
+-- Note: listToPat converts a Haskell list to a Tidal pattern.
+-- The speed pattern cycles through the four speed values in sync
+-- with the four chop slices, retuning each to the target pitch.
+-- This is an approximation — pitch accuracy depends on the source
+-- material being monophonic and the slice boundaries aligning
+-- with note onsets.

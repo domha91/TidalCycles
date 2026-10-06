@@ -1,9 +1,28 @@
-d1 $ note "0 1 2 3 4 5 6" # s "harpsichord" # scaleName "A_JI_Aeolian"
+d1 $ note "0 1 2 3 4 5 6" # s "harpsichord" # scaleName "A_JI_Aeolian"  # gain 1.3
+
+d2 $ note "0 1 2 3 4 5 6" # s "fanfare_brass" # scaleName "A_JI_Aeolian"
+
+d3 $ note "0 1 2 3 4 5 6" # s "harpsichord" # scaleName "A_JI_Aeolian"  # gain 1.3
+
+d4 $ note "0 1 2 3 4 5 6" # s "fanfare_brass" # scaleName "A_JI_Aeolian"
+
+d5 $ note "0 1 2 3 4 5 6" # s "harpsichord" # scaleName "A_JI_Aeolian"  # gain 1.3
+
+d6 $ note "0 1 2 3 4 5 6" # s "fanfare_brass" # scaleName "A_JI_Aeolian"
+
+d7 $ note "0 1 2 3 4 5 6" # s "harpsichord" # scaleName "A_JI_Aeolian"  # gain 1.3
+
+d8 $ note "0 1 2 3 4 5 6" # s "fanfare_brass" # scaleName "A_JI_Aeolian"
+
+d9 $ note "0 1 2 3 4 5 6" # s "microkorg" # sustain 0.5 # amp 1
 
 -- Switch scale mid-pattern
 d1 $ note "0 1 2 3 4 5 6" # scaleName "<A_JI_Aeolian B_JI_Dorian>" # s "harpsichord"
 
 -- Direct freq (bypasses scaleName system)
 d1 $ freq "440 495 528 587 660 704 880" # s "harpsichord"
+
+:script /media/projects/TidalCycles/renaissance.tidal
+
 
 hush

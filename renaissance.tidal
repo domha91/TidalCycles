@@ -1,0 +1,639 @@
+hush
+
+
+-- ============================================================
+-- renaissance.tidal
+-- Renaissance Counterpoint Live Performance System
+-- Deliverable 3: Pattern Library
+-- Location: /media/projects/TidalCycles/renaissance.tidal
+--
+-- ALL DEFINITIONS ARE SINGLE LINES — evaluate each with Ctrl-E.
+-- No :{ :} blocks anywhere. Each `let varName = ...` is one line.
+--
+-- LOAD ORDER:
+--   1. Evaluate BootTidal.hs first (get tidal> prompt). This also
+--      starts the Launchpad OSC listener automatically, on an
+--      empty/silent grid — nothing to call manually.
+--   2. Load the whole file in one go: in the GHCi/Tidal terminal,
+--      :script /media/projects/TidalCycles/renaissance.tidal
+--      This runs every line exactly as if typed one at a time (GHCi's
+--      :script reads a file and feeds it to the REPL line by line —
+--      identical semantics to Ctrl-E, just automated for the whole
+--      file). Safe to re-run any time — every line here is either a
+--      pure `let` redefinition or the final grid update, nothing has
+--      a side effect worth avoiding. Ctrl-E per line still works too,
+--      for when you want to edit and re-test one specific pattern
+--      without reloading everything.
+--   3. That's it. The last line (SECTION 14) pushes every pattern
+--      defined in this file into the live Launchpad grid via
+--      writeIORef — no steps back in BootTidal.hs, nothing to
+--      re-evaluate there, ever. See SECTION 14 for why a plain
+--      `let launchpadGrid = ...` here would NOT actually work
+--      (it's explained in BootTidal.hs, worth reading once).
+--
+-- ORBIT LAYOUT:
+--   d1 melody  d2 inner  d3 bass  d4 keys
+--   d5 lute    d6 drone  d7 perc  d8 loops
+--
+-- VOICE LIMITING NOTE (SuperDirt 1.7.2):
+--   The cut control has been removed from every pattern below -- suspected of
+--   choking notes across orbits rather than scoping to one, which lined
+--   up with only orbit 1 ever producing sound. If monophonic behaviour
+--   on lead voices is wanted again, re-add # cut deliberately and check
+--   it doesn't silence other orbits before relying on it.
+--   Use explicit # sustain on drones to prevent accumulation.
+-- ============================================================
+
+
+-- SECTION 0: OPTIONAL QUICK AUDIO CHECK
+-- ============================================================
+-- Not part of the load sequence — evaluate individually, only if you
+-- want to confirm mySynths.scd + the microtonal system are alive
+-- before working through the rest of the file. Safe to skip entirely.
+
+-- d1 $ note 0 # s "recorder" # sustain 1 # gain 0.9 # meantone
+-- (needs the d1 fader up to hear; `hush` when done. Deliberately not
+-- `once` here — once isn't a numbered stream like d1-d16, so unlike
+-- them it carries no inherent orbit; getting sound from it depends on
+-- an implicit default rather than routing anywhere definite. d1 goes
+-- to orbit 0 unambiguously, same chain already confirmed working.)
+
+
+-- SECTION 1: GLOBAL PERFORMANCE VARIABLES
+-- ============================================================
+
+let mode = meantone
+
+let tonic = 0
+
+let bassPch = -12
+
+let innerPch = 7
+
+
+-- ============================================================
+-- SECTION 2: PAVANE
+-- ============================================================
+-- Slow, stately, duple. setcps 0.22 – 0.25. One cycle = 4 beats.
+
+let pavane_melody_A = note "0 2 4 7 [5 4] 2 0 ~" # s "recorder" # sustain 0.9 # gain 0.85 # vibratoDepth 0.0 # timbre 0.6 # meantone
+
+let pavane_melody_B = note "7 5 4 2 [4 2] 0 [-1 0] ~" # s "recorder" # sustain 0.9 # gain 0.85 # vibratoDepth 0.0 # timbre 0.6 # meantone
+
+let pavane_fiddle_A = note "0 2 4 7 [5 4] 2 0 ~" # s "fiddle" # sustain 1.0 # gain 0.8 # vibratoDepth 0.025 # timbre 0.45 # meantone
+
+let pavane_inner_A = note "[-2 -2] 0 2 5 [3 2] 0 [-2 -2] ~" # s "viol_consort" # sustain 0.85 # gain 0.7 # vibratoDepth 0.015 # timbre 0.4 # meantone
+
+let pavane_inner_B = note "5 3 2 0 [2 0] [-2 -2] [-3 -2] ~" # s "viol_consort" # sustain 0.85 # gain 0.7 # vibratoDepth 0.015 # timbre 0.4 # meantone
+
+-- Independent alto/tenor (not derived from pavane_inner_A above -- composed
+-- against pavane_melody_A + pavane_bass_A + pavane_keys_A's own harmony:
+-- beat1 Am {0,4,7} / beat2 F-ish {2,5,9} / beat3 Am {0,4,7} / beat4 {0,5,9}.
+-- Alto takes upper-register chord tones in contrary motion against the
+-- soprano's ascent; tenor is sparser and more sustained, a slower-moving
+-- harmonic support voice sitting between alto and the bass.
+let pavane_alto = note "-3 -5 -2 0 -5 -3 -5 ~" # s "viol_consort" # sustain 0.85 # gain 0.68 # vibratoDepth 0.015 # timbre 0.42 # meantone
+
+let pavane_tenor = note "-10 ~ -7 -5 ~ -7 -10 ~" # s "crumhorn" # sustain 1.1 # gain 0.62 # timbre 0.48 # meantone
+
+let pavane_bass_A = slow 2 $ note "[-12 -12] [-5 -5] [-12 -12] [-7 -7]" # s "theorbo" # sustain 1.2 # gain 0.75 # timbre 0.5 # meantone
+
+let pavane_bass_B = slow 2 $ note "[-5 -5] [-7 -7] [-12 -12] [-12 ~]" # s "theorbo" # sustain 1.2 # gain 0.75 # timbre 0.5 # meantone
+
+let pavane_bass_dulcian = slow 2 $ note "[-12 ~] [-5 ~] [-12 ~] [-7 ~]" # s "dulcian" # sustain 1.6 # gain 0.72 # timbre 0.55 # meantone
+
+let pavane_keys_A = n (slow 2 "[0,4,7] [2,5,9] [0,4,7] [0,5,9]") # s "harpsichord" # sustain 0.6 # gain 0.65 # timbre 0.6 # meantone
+
+let pavane_lute_A = note "[0 4 7 4] [2 5 9 5] [0 4 7 4] [2 5 9 5]" # s "lute" # sustain 0.55 # gain 0.7 # timbre 0.5 # meantone
+
+let pavane_drone = slow 4 $ note "[-12 ~] ~ ~ ~" # s "drone" # sustain 6.0 # gain 0.5 # timbre 0.3 # meantone
+
+let pavane_ensemble_A = d1 pavane_melody_A >> d2 pavane_alto >> d3 pavane_tenor >> d4 pavane_bass_A >> d5 pavane_keys_A >> d6 pavane_drone >> d7 silence >> d8 silence
+
+let pavane_ensemble_B = d1 pavane_melody_B >> d2 pavane_alto >> d3 pavane_tenor >> d4 pavane_bass_B >> d5 pavane_keys_A >> d6 pavane_drone >> d7 silence >> d8 silence
+
+
+-- ============================================================
+-- SECTION 3: GALLIARD
+-- ============================================================
+-- Lively triple. setcps 0.33 – 0.38. Three beats per cycle.
+
+let galliard_melody_A = note "0 [2 3] 4 7 [5 4] 2" # s "recorder" # sustain 0.75 # gain 0.88 # vibratoDepth 0.0 # timbre 0.65 # meantone
+
+let galliard_melody_B = note "7 5 4 2 [1 0] [-1 0]" # s "recorder" # sustain 0.75 # gain 0.88 # vibratoDepth 0.0 # timbre 0.65 # meantone
+
+let galliard_cornett_A = note "0 [2 3] 4 7 [5 4] 2" # s "cornett" # sustain 0.65 # gain 0.82 # timbre 0.75 # meantone
+
+let galliard_inner_A = note "[-2 -2] [0 1] 2 5 [3 2] 0" # s "crumhorn" # sustain 0.7 # gain 0.68 # timbre 0.5 # meantone
+
+-- Independent alto/tenor -- composed against galliard_melody_A's rhythm and
+-- galliard_keys_A's harmony: beat1 G-ish {0,4,7}, beat2 C-ish {2,5,9},
+-- beat3 G-ish {0,4,7} again (triple meter, 2 subdivisions per beat).
+let galliard_alto = note "4 2 5 4 0 2" # s "crumhorn" # sustain 0.68 # gain 0.65 # timbre 0.52 # meantone
+
+let galliard_tenor = note "0 -3 -2 0 -3 -5" # s "viol_consort" # sustain 0.75 # gain 0.6 # vibratoDepth 0.012 # timbre 0.4 # meantone
+
+let galliard_bass_A = note "-12 ~ -7" # s "sackbut_bass" # sustain 1.0 # gain 0.78 # timbre 0.6 # meantone
+
+let galliard_bass_walk = note "-12 -10 -9" # s "theorbo" # sustain 0.8 # gain 0.72 # timbre 0.5 # meantone
+
+let galliard_keys_A = note "[0,4,7] [2,5,9] [0,4,7]" # s "virginal" # sustain 0.5 # gain 0.65 # timbre 0.7 # meantone
+
+let galliard_lute_A = note "[0 4 7] [2 5 9] [0 4 7]" # s "lute" # sustain 0.5 # gain 0.68 # timbre 0.55 # meantone
+
+let galliard_tabor_A = note "0 ~ ~" # s "tabor_snare" # gain 0.45 # sustain 0.15
+
+let galliard_tabor_B = note "~ 0 0" # s "tabor_snare" # gain 0.4 # sustain 0.12
+
+let galliard_ensemble_A = d1 galliard_melody_A >> d2 galliard_alto >> d3 galliard_tenor >> d4 galliard_bass_A >> d5 galliard_keys_A >> d6 silence >> d7 galliard_tabor_A >> d8 silence
+
+
+-- ============================================================
+-- SECTION 4: ALLEMANDE
+-- ============================================================
+-- Moderate duple. setcps 0.28 – 0.30. Independent inner voices.
+
+let allemande_melody_A = note "0 1 2 4 [3 2] 1 0 ~" # s "viol_consort" # sustain 0.8 # gain 0.82 # vibratoDepth 0.02 # timbre 0.45 # meantone
+
+let allemande_inner_A = note "4 5 4 2 [4 3] 2 0 ~" # s "viol_consort" # sustain 0.8 # gain 0.7 # vibratoDepth 0.015 # timbre 0.4 # meantone
+
+-- allemande_inner_A above already stands as a genuinely independent line
+-- (this form's own section comment always called it that) -- it becomes
+-- the alto directly, unchanged. Only a new tenor is needed, sitting
+-- between it and allemande_bass_A, in contrary/independent motion to both.
+let allemande_tenor = note "-5 -4 -2 0 [-2 -4] -5 0 ~" # s "crumhorn" # sustain 0.78 # gain 0.62 # timbre 0.5 # meantone
+
+let allemande_bass_A = note "-12 -10 -9 -7 [-9 -10] -12 -7 ~" # s "dulcian" # sustain 0.75 # gain 0.75 # timbre 0.55 # meantone
+
+let allemande_keys_A = n (slow 2 "[[0 7] [4 7] [0 7] [4 7]] [[2 9] [5 9] [2 9] [5 9]]") # s "clavichord" # sustain 0.35 # gain 0.62 # timbre 0.55 # meantone
+
+let allemande_lute_A = note "[[0,4,7] ~] [[2,5,9] ~] [[0,4,7] ~] [[2,5,9] ~]" # s "lute" # sustain 0.7 # gain 0.65 # timbre 0.5 # meantone
+
+
+-- ============================================================
+-- SECTION 5: COURANTE
+-- ============================================================
+-- Flowing triple. setcps 0.30 – 0.33.
+
+let courante_melody_A = note "0 2 4 [5 4 2] 0 [2 4]" # s "recorder" # sustain 0.6 # gain 0.85 # timbre 0.65 # meantone
+
+let courante_rebec_A = note "0 2 4 [5 4 2] 0 [2 4]" # s "rebec" # sustain 0.65 # gain 0.8 # vibratoDepth 0.03 # timbre 0.5 # meantone
+
+let courante_bass_A = note "-12 ~ -7" # s "theorbo" # sustain 1.1 # gain 0.72 # timbre 0.5 # meantone
+
+let courante_keys_hemiola = note "[[0,4,7] ~ [0,4,7]] [~ [2,5,9] ~]" # s "harpsichord" # sustain 0.55 # gain 0.65 # timbre 0.65 # meantone
+
+
+-- ============================================================
+-- SECTION 6: SALTARELLO
+-- ============================================================
+-- Fast jumping dance. setcps 0.40 – 0.47. Compound duple feel.
+
+let saltarello_melody_A = note "[0 2 4] [7 5 4] [2 4 5] [7 ~ ~]" # s "pipe" # sustain 0.45 # gain 0.88 # timbre 0.7 # meantone
+
+let saltarello_melody_B = note "[7 5 4] [2 4 2] [0 2 0] [-1 ~ ~]" # s "pipe" # sustain 0.45 # gain 0.88 # timbre 0.7 # meantone
+
+let saltarello_fiddle_A = note "[0 2 4] [7 5 4] [2 4 5] [7 ~ ~]" # s "fiddle" # sustain 0.48 # gain 0.85 # vibratoDepth 0.0 # timbre 0.6 # meantone
+
+let saltarello_inner_A = note "[4 5 4] [2 ~ ~] [2 4 2] [0 ~ ~]" # s "crumhorn" # sustain 0.45 # gain 0.65 # timbre 0.55 # meantone
+
+-- saltarello_inner_A above becomes the alto directly, unchanged. New tenor
+-- is deliberately sparser against the busy alto -- mostly one note per
+-- beat-group, outlining the harmony against saltarello_bass_A underneath.
+let saltarello_tenor = note "[-3 ~ ~] [-5 ~ ~] [-3 ~ ~] [-7 ~ ~]" # s "viol_consort" # sustain 0.55 # gain 0.6 # vibratoDepth 0.012 # timbre 0.42 # meantone
+
+let saltarello_bass_A = note "[-12 ~ ~] [-7 ~ ~] [-12 ~ ~] [-5 ~ ~]" # s "pluck_bright" # sustain 0.4 # gain 0.8 # timbre 0.7 # meantone
+
+let saltarello_keys_A = note "[[0,4,7] ~ ~] [[2,5,9] ~ ~] [[0,4,7] ~ ~] [[0,5,9] ~ ~]" # s "virginal" # sustain 0.4 # gain 0.7 # timbre 0.72 # meantone
+
+let saltarello_tabor_A = note "[0 ~ ~] [0 ~ ~] [0 ~ ~] [0 ~ ~]" # s "tabor_snare" # gain 0.5 # sustain 0.12
+
+let saltarello_tambourine = fast 3 $ note "0" # s "tambourine" # gain 0.35 # sustain 0.08
+
+let saltarello_ensemble_A = d1 saltarello_melody_A >> d2 saltarello_inner_A >> d3 saltarello_tenor >> d4 saltarello_bass_A >> d5 saltarello_keys_A >> d6 silence >> d7 (stack [saltarello_tabor_A, saltarello_tambourine]) >> d8 silence
+
+
+-- ============================================================
+-- SECTION 7: ESTAMPIE
+-- ============================================================
+-- Medieval repeat dance with ouvert/clos endings. setcps 0.42 – 0.50.
+
+let estampie_ouvert = note "0 2 4 2 0 [-2 0] [2 4] 7" # s "fiddle" # sustain 0.55 # gain 0.9 # vibratoDepth 0.0 # timbre 0.5 # meantone
+
+let estampie_clos = note "0 2 4 2 0 [-2 0] [-2 -4] 0" # s "fiddle" # sustain 0.55 # gain 0.9 # vibratoDepth 0.0 # timbre 0.5 # meantone
+
+let estampie_drone = slow 8 $ note "[-12 ~] ~ ~ ~ ~ ~ ~ ~" # s "hurdy_gurdy_bagpipes" # sustain 12.0 # gain 0.6 # timbre 0.45 # meantone
+
+let estampie_drone_organ = slow 4 $ n (slow 4 "[-12,-5] ~ ~ ~") # s "organ" # sustain 8.0 # gain 0.55 # timbre 0.35 # meantone
+
+let estampie_framedrum = note "[0 ~ 0 ~] [0 ~ 0 ~] [0 ~ 0 ~] [0 0 ~ 0]" # s "frame_drum" # gain 0.55 # sustain 0.18
+
+let estampie_nakers = note "[0 ~ ~ ~] [~ ~ 0 ~] [0 ~ ~ ~] [~ 0 ~ ~]" # s "nakers" # gain 0.5 # sustain 0.1
+
+let estampie_full = d1 (cat [estampie_ouvert, estampie_clos]) >> d2 silence >> d3 silence >> d4 silence >> d5 silence >> d6 estampie_drone >> d7 (stack [estampie_framedrum, estampie_nakers]) >> d8 silence
+
+
+-- ============================================================
+-- SECTION 8: ENSEMBLE PRESETS
+-- ============================================================
+
+let consort_soprano = note "7 9 7 5 [4 5] 7 [5 4] 2" # s "viol_consort" # sustain 0.85 # gain 0.8 # vibratoDepth 0.02 # timbre 0.4 # meantone
+
+let consort_alto = note "4 5 4 2 [0 2] 4 [2 0] [-2 0]" # s "viol_consort" # sustain 0.85 # gain 0.75 # vibratoDepth 0.015 # timbre 0.38 # meantone
+
+let consort_tenor = note "0 2 0 [-2 0] [-5 -3] 0 [-2 -5] [-7 -5]" # s "viol_consort" # sustain 0.85 # gain 0.72 # vibratoDepth 0.015 # timbre 0.36 # meantone
+
+let consort_bass = slow 2 $ note "-12 -7 -9 -12" # s "viol_consort" # sustain 1.2 # gain 0.78 # vibratoDepth 0.01 # timbre 0.35 # meantone
+
+let ensemble_consort = d1 consort_soprano >> d2 consort_alto >> d3 consort_tenor >> d4 consort_bass >> d5 silence >> d6 silence >> d7 silence >> d8 silence
+
+let lutsong_lute = note "[0 4 7 4] [2 5 9 5] [4 7 12 7] [2 5 9 5]" # s "lute" # sustain 0.55 # gain 0.8 # timbre 0.5 # meantone
+
+let lutsong_voice = slow 2 $ note "7 5 4 2" # s "vocal" # sustain 1.2 # gain 0.72 # vibratoDepth 0.04 # timbre 0.5 # meantone
+
+let lutsong_bass = slow 4 $ note "-12 -7 -9 -12" # s "theorbo" # sustain 1.5 # gain 0.65 # timbre 0.48 # meantone
+
+let ensemble_lutsong = d1 lutsong_voice >> d2 silence >> d3 silence >> d4 lutsong_bass >> d5 lutsong_lute >> d6 silence >> d7 silence >> d8 silence
+
+let fanfare_upper = slow 2 $ note "0 7 12 [7 12] 0 ~" # s "cornett" # sustain 0.7 # gain 0.9 # timbre 0.7 # meantone
+
+let fanfare_mid = slow 2 $ note "0 4 7 [4 7] 0 ~" # s "fanfare_brass" # sustain 0.75 # gain 0.85 # timbre 0.65 # meantone
+
+let fanfare_low = slow 2 $ note "-12 -12 -5 [-12 -5] -12 ~" # s "dulcian" # sustain 0.9 # gain 0.82 # timbre 0.6 # meantone
+
+let fanfare_bells = slow 4 $ note "12 7 [12 ~] ~" # s "bells" # sustain 1.2 # gain 0.7 # timbre 0.5 # meantone
+
+let ensemble_fanfare = d1 fanfare_upper >> d2 fanfare_mid >> d3 silence >> d4 fanfare_low >> d5 fanfare_bells >> d6 silence >> d7 silence >> d8 silence
+
+let drone_texture_root = slow 8 $ note "-12 ~ ~ ~ ~ ~ ~ ~" # s "drone" # sustain 14.0 # gain 0.6 # timbre 0.3 # meantone
+
+let drone_texture_fifth = slow 8 $ note "-5 ~ ~ ~ ~ ~ ~ ~" # s "hurdy_gurdy_bagpipes" # sustain 14.0 # gain 0.55 # timbre 0.4 # meantone
+
+let drone_handbells = every 3 rev $ slow 2 $ note "0 4 7 [4 0]" # s "handbells" # sustain 1.5 # gain 0.5 # timbre 0.5 # meantone
+
+-- Pulse: rhythmic ostinato, distinct in kind from the sustained drones
+-- above -- steady repeated-note motion under a held drone, the other half
+-- of "pulse/drone". Tonic pedal at moderate rate; a livelier fifth-based
+-- variant for use under faster forms (galliard/saltarello tempo range).
+let pulse_tonic = note "-7 -7 -7 -7" # s "pluck_bright" # sustain 0.2 # gain 0.55 # timbre 0.5 # meantone
+
+let pulse_fifth = fast 2 $ note "-7 -5 -7 -5" # s "pluck_bright" # sustain 0.15 # gain 0.5 # timbre 0.55 # meantone
+
+let ensemble_drone = d1 silence >> d2 silence >> d3 silence >> d4 silence >> d5 silence >> d6 (stack [drone_texture_root, drone_texture_fifth, drone_handbells]) >> d7 silence >> d8 silence
+
+
+-- ============================================================
+-- SECTION 9: COUNTERPOINT PATTERNS
+-- ============================================================
+-- Use cp1_voice1 on d1 and cp1_voice2 on d2 simultaneously.
+
+let cp1_voice1 = note "0 2 4 5 4 2 0 ~" # s "recorder" # sustain 0.9 # gain 0.82 # timbre 0.6 # meantone
+
+let cp1_voice2 = note "4 5 7 9 7 5 4 ~" # s "viol_consort" # sustain 0.9 # gain 0.72 # vibratoDepth 0.015 # timbre 0.42 # meantone
+
+let cp2_voice1 = slow 2 $ note "0 4 7 5" # s "recorder" # sustain 1.8 # gain 0.82 # timbre 0.6 # meantone
+
+let cp2_voice2 = note "4 5 7 9 7 5 4 2" # s "viol_consort" # sustain 0.88 # gain 0.7 # vibratoDepth 0.015 # timbre 0.42 # meantone
+
+let cp3_cantus = slow 4 $ note "0 2 4 2" # s "dulcian" # sustain 3.5 # gain 0.75 # timbre 0.5 # meantone
+
+let cp3_descant = note "7 6 5 4 [5 4 3 2] 0 2 4 [2 0 2 4] 5 7 9 7" # s "recorder" # sustain 0.45 # gain 0.8 # timbre 0.62 # meantone
+
+let cp4_base = slow 2 $ note "0 7 5 4" # s "organ" # sustain 2.0 # gain 0.7 # timbre 0.4 # meantone
+
+let cp4_suspension = slow 2 $ note "7 6 9 7" # s "viol_consort" # sustain 2.0 # gain 0.72 # vibratoDepth 0.02 # timbre 0.43 # meantone
+
+
+-- ============================================================
+-- SECTION 10: MODAL COLOUR PATCHES
+-- ============================================================
+
+let modal_dorian_D = note "0 2 3 5 7 9 10 12" # s "harpsichord" # sustain 0.5 # gain 0.75 # timbre 0.65 # dorianD
+
+let modal_phrygian_E = note "0 1 3 5 7 8 10 12" # s "lute" # sustain 0.55 # gain 0.72 # timbre 0.52 # phrygianE
+
+let modal_mixolydian_G = note "0 2 4 5 7 9 10 12" # s "pipe" # sustain 0.48 # gain 0.78 # timbre 0.68 # mixolydianG
+
+let modal_lydian_F = note "0 2 4 6 7 9 11 12" # s "virginal" # sustain 0.5 # gain 0.7 # timbre 0.7 # lydianF
+
+
+-- ============================================================
+-- SECTION 11: LIVE PERFORMANCE TRANSITIONS
+-- ============================================================
+-- Each is a single line. Ctrl-E to fire the transition.
+-- Set tempo first: setcps 0.22
+
+let startPavane = setcps 0.22 >> xfadeIn 1 4 pavane_drone >> xfadeIn 2 4 pavane_lute_A >> xfadeIn 3 4 pavane_bass_A >> xfadeIn 4 4 pavane_keys_A >> xfadeIn 5 8 pavane_melody_A
+
+let startDrone = setcps 0.20 >> d6 (stack [drone_texture_root, drone_texture_fifth]) >> xfadeIn 2 8 drone_handbells
+
+let toGalliard = setcps 0.33 >> xfadeIn 1 2 galliard_melody_A >> xfadeIn 2 2 galliard_inner_A >> xfadeIn 3 2 galliard_bass_A >> xfadeIn 4 2 galliard_keys_A >> xfadeIn 5 2 galliard_lute_A >> xfadeIn 7 2 galliard_tabor_A
+
+let toSaltarello = setcps 0.42 >> xfadeIn 1 2 saltarello_melody_A >> xfadeIn 2 2 saltarello_inner_A >> xfadeIn 3 2 saltarello_bass_A >> xfadeIn 4 2 saltarello_keys_A >> xfadeIn 7 1 saltarello_tabor_A
+
+let closeOut = xfadeIn 1 8 silence >> xfadeIn 2 8 silence >> xfadeIn 3 8 silence >> xfadeIn 4 8 silence >> xfadeIn 5 8 silence >> xfadeIn 6 16 silence >> xfadeIn 7 4 silence
+
+
+-- ============================================================
+-- SECTION 11B: MICROKORG (V CHANNEL — LIVE MIDI VIA MIDIHUB)
+-- ============================================================
+-- s "microkorg" doesn't play audio through SuperDirt at all -- startup.scd
+-- Section 3f (\midiMirror OSCdef) intercepts any /dirt/play event tagged
+-- s "microkorg" / "external" / "midihub" and sends a real MIDI note out
+-- through the Midihub instead. The Microkorg's own audio comes back in
+-- separately via SoundIn(0) -> ~mkorgSynth (already built, V channel).
+-- No # scaleName / # meantone here -- the Midihub itself remaps note
+-- numbers against its loaded .scl file, so plain integers are correct;
+-- running these through Tidal's own microtonal system would be applying
+-- the tuning twice.
+--
+-- PARAMETER CONVENTIONS (read directly from startup.scd's OSCdef, not
+-- standard SuperDirt -- only apply to s "microkorg"/"external"/"midihub"):
+--   note      plain integer, +60 added on the SC side before sending
+--             (# note 0 -> MIDI note 60). This is what the Midihub reads
+--             against its .scl table -- send scale degrees, not 12TET-
+--             corrected pitches.
+--   amp       NOT gain -- this OSCdef reads the "amp" key specifically.
+--             0.0-1.0, scaled to MIDI velocity 1-127.
+--   sustain   note-on to note-off duration in seconds (absolute, via
+--             SystemClock.sched -- not cycle-relative the way sustain
+--             normally behaves on SuperDirt-triggered patterns).
+--   midichan  MIDI channel, 0-15. Defaults to 0 if omitted. Change this
+--             if the Microkorg isn't listening on channel 1.
+--
+-- PLAY THESE WITH mkorg, NOT d9 -- d9 auto-tags orbit 8 the same way d1
+-- tags orbit 0, and this SuperDirt instance only has orbits 0-7 (d1-d8),
+-- so d9 makes SuperDirt discard the event before it goes anywhere
+-- ("event falls out of existing orbits, index (8)" in the post window --
+-- if you see that, this is why). mkorg (defined in BootTidal.hs) is
+-- streamReplace on the same stream slot 9 but skips that auto-tagging
+-- entirely, which is correct here since MIDI-out never touches
+-- SuperDirt's orbit chain in the first place -- no audio, no reverb, no
+-- fader, so there's no orbit to meaningfully assign anyway.
+--
+--   mkorg mkorg_test_run
+--
+-- SuperDirt will still separately warn "no synth or sample named
+-- 'microkorg' could be found" every time -- that part's expected and
+-- harmless, it's just SuperDirt's own instrument lookup failing on a
+-- name that's deliberately not a real one. The line to actually watch
+-- for is "MIDI out -> ch:... note:... vel:... dur:..." -- that's the
+-- \midiMirror OSCdef confirming it fired and sent a real MIDI message.
+-- If that line never appears, the Microkorg genuinely isn't receiving
+-- anything and it's worth checking the Midihub connected to the right
+-- port -- the boot log picks whichever port matches "midihub" first
+-- (currently port A); if the Microkorg's cabled into B/C/D instead,
+-- that's the actual problem.
+--
+-- CRITICAL ORDERING RULE, learned the hard way after a long debugging
+-- session: the multi-value pattern (note, here) MUST come BEFORE
+-- # s "microkorg", never after. # takes its event structure from
+-- whatever is on its LEFT and just samples a value from the right at
+-- each of those event times. s "microkorg" is a single, unsubdivided
+-- value -- one event per cycle -- so if it's on the left, EVERYTHING
+-- chained after it (note, sustain, amp) gets collapsed to one sample
+-- per cycle, always taken at the very start. A pattern written
+-- note "0 2 4 7" # s "microkorg" will silently play only the first
+-- note (0), forever, once per cycle -- no error, no warning, it just
+-- quietly never plays the rest. Every pattern below is written
+-- note-first specifically because of this; it's the same convention
+-- every other instrument in this project already uses (e.g.
+-- note "0 2 4 7" # s "recorder"), just easy to get backwards here
+-- since the Microkorg feels like "the thing being played" and s
+-- naturally wants to go first when writing it out.
+
+-- Plain scale-degree run -- confirms the MIDI connection and Midihub
+-- retuning are working before anything more musical.
+let mkorg_test_run = note "0 1 2 3 4 5 6 7" # s "microkorg" # sustain 0.35 # amp 0.8
+
+-- Same run with rests, easier to hear individual notes land correctly.
+let mkorg_test_spaced = note "0 ~ 2 ~ 4 ~ 7 ~" # s "microkorg" # sustain 0.3 # amp 0.75
+
+-- A short arpeggiated phrase to live-code over/against -- not a fixed
+-- performance pattern, a starting point to edit at the prompt.
+let mkorg_test_phrase = note "[0 2 4] [7 4 2] [0 2 4] [5 4 2]" # s "microkorg" # sustain 0.2 # amp 0.7
+
+-- If the Microkorg listens on a channel other than 1, add # midichan N
+-- (0-indexed, so channel 2 on the synth = midichan 1):
+-- let mkorg_test_run = note "0 1 2 3 4 5 6 7" # s "microkorg" # sustain 0.35 # amp 0.8 # midichan 0
+
+
+-- Visuals OSC on/off -- same /dirt/play-mirror trick as microkorg above,
+-- watched by \visualsToggle in startup.scd Section 3h. These are one-shot
+-- control messages, not music, so trigger with `once`, not mkorg/dN --
+-- `once` fires a pattern exactly one time rather than starting it looping
+-- every cycle, which is what a hotkey press should do here. Bound to a
+-- key in tidal.lua; can also be typed directly:
+--   once visualsOff
+--   once visualsOn
+let visualsOff = n 0 # s "visualsoff"
+let visualsOn  = n 0 # s "visualson"
+
+
+-- ============================================================
+-- SECTION 12: LAUNCHPAD SLOT ASSIGNMENT — QUICK REFERENCE
+-- ============================================================
+-- At-a-glance cheat sheet only — SECTION 14 below is the code that
+-- actually assigns these. Nothing here needs copying anywhere.
+--
+-- Columns are consistent across every row: 1=pavane 2=galliard
+-- 3=saltarello 4=estampie 5=courante 6=consort 7=allemande 8=fanfare.
+-- Column 6 was the cp1/cp2-style species-counterpoint exercises in the
+-- old layout -- swapped for the consort_soprano/alto/tenor/bass quartet
+-- (Section 8), a genuinely independent 4-voice piece that existed
+-- fully composed but was never actually slotted in before. cp1-cp4
+-- remain defined and available for manual d1/d2 triggering if wanted.
+--
+-- ROW 1 (d1 SOPRANO):
+-- slot_1_1 = pavane_melody_A      slot_1_2 = galliard_melody_A
+-- slot_1_3 = saltarello_melody_A  slot_1_4 = estampie_ouvert
+-- slot_1_5 = courante_melody_A    slot_1_6 = consort_soprano
+-- slot_1_7 = allemande_melody_A   slot_1_8 = fanfare_upper
+--
+-- ROW 2 (d2 ALTO):
+-- slot_2_1 = pavane_alto          slot_2_2 = galliard_alto
+-- slot_2_3 = saltarello_inner_A   slot_2_4 = silence
+-- slot_2_5 = silence              slot_2_6 = consort_alto
+-- slot_2_7 = allemande_inner_A    slot_2_8 = fanfare_mid
+--
+-- ROW 3 (d3 TENOR):
+-- slot_3_1 = pavane_tenor         slot_3_2 = galliard_tenor
+-- slot_3_3 = saltarello_tenor     slot_3_4 = silence
+-- slot_3_5 = silence              slot_3_6 = consort_tenor
+-- slot_3_7 = allemande_tenor      slot_3_8 = silence
+--
+-- ROW 4 (d4 BASS):
+-- slot_4_1 = pavane_bass_A        slot_4_2 = galliard_bass_A
+-- slot_4_3 = saltarello_bass_A    slot_4_4 = silence
+-- slot_4_5 = courante_bass_A      slot_4_6 = consort_bass
+-- slot_4_7 = allemande_bass_A     slot_4_8 = fanfare_low
+--
+-- ROW 5 (d5 CHORDS/ARPEGGIO):
+-- slot_5_1 = pavane_keys_A        slot_5_2 = galliard_keys_A
+-- slot_5_3 = saltarello_keys_A    slot_5_4 = silence
+-- slot_5_5 = courante_keys_hemiola slot_5_6 = pavane_lute_A (arpeggio)
+-- slot_5_7 = allemande_keys_A     slot_5_8 = fanfare_bells
+-- (galliard_lute_A / allemande_lute_A remain defined but not grid-slotted
+-- — only 8 slots for 9 candidate patterns; trigger either manually via
+-- d5 $ galliard_lute_A if wanted instead of/alongside the chord version)
+--
+-- ROW 6 (d6 PULSE/DRONE):
+-- slot_6_1 = pavane_drone         slot_6_2 = pulse_tonic
+-- slot_6_3 = pulse_fifth          slot_6_4 = estampie_drone
+-- slot_6_5 = silence              slot_6_6 = drone_texture_root
+-- slot_6_7 = silence              slot_6_8 = drone_texture_fifth
+--
+-- ROW 7 (d7 PERCUSSION/EAR CANDY):
+-- slot_7_1 = silence              slot_7_2 = galliard_tabor_A
+-- slot_7_3 = saltarello_tabor_A   slot_7_4 = estampie_framedrum
+-- slot_7_5 = estampie_nakers      slot_7_6 = silence
+-- slot_7_7 = silence              slot_7_8 = silence
+-- (The MPD218 pads have nothing to do with orbits or Tidal streams: they
+-- play samples directly via PlayBuf -- see startup.scd Section 3e)
+--
+-- ROW 8 (d8 LOOPS/EMBELLISHMENT):
+-- slot_8_1..8 = loop_release_1..8 (SECTION 13 — release promo loops)
+
+
+-- ============================================================
+-- SECTION 13: LOOP BANK (d8) — RELEASE PROMO LOOPS / EMBELLISHMENT
+-- ============================================================
+-- Plays from the "release-current" sample folder (startup.scd loads
+-- /media/projects/Audio/Samples/release-current/*). That folder is
+-- EMPTY right now, so all 8 of these are silent no-ops until you:
+--   1. drop up to 8 audio files into that folder (any SuperDirt-
+--      readable format), named so alphabetical order = the order
+--      you want them across the pads (SuperDirt indexes files
+--      alphabetically: file 0 -> n 0 -> loop_release_1, etc.)
+--   2. reboot SC (sample folders are only scanned at boot)
+-- No pattern edits needed when you swap in a new release's loops —
+-- only the folder contents change, this file stays the same. If a
+-- release needs different treatment (different gain, a specific
+-- sample instead of positional index, speed/pitch shift, etc.) edit
+-- the relevant loop_release_N line directly.
+--
+-- This orbit is dual-purpose: these 8 slots cover Launchpad-triggered
+-- one-shot embellishment loops. For the OTHER half -- slicing a loop
+-- and playing with it live rather than triggering it whole -- write
+-- that directly at the prompt when performing rather than as a fixed
+-- slot (chop/striate count is something you'll want to vary in the
+-- moment, not commit to ahead of time). Once release-current/ has
+-- files in it:
+--   d8 $ chop 8 $ n 0 # s "release-current" # gain 0.9
+--   d8 $ striate 4 $ n 0 # s "release-current" # speed 1 # gain 0.9
+--   d8 $ (loopAt 2 $ chop 16 $ n 0 # s "release-current") # gain 0.85
+-- All three still go through the same fader/mute/reverb chain as
+-- everything else on d8 -- raise the d8 fader as usual to hear them.
+
+let loop_release_1 = n 0 # s "release-current" # gain 0.9
+
+let loop_release_2 = n 1 # s "release-current" # gain 0.9
+
+let loop_release_3 = n 2 # s "release-current" # gain 0.9
+
+let loop_release_4 = n 3 # s "release-current" # gain 0.9
+
+let loop_release_5 = n 4 # s "release-current" # gain 0.9
+
+let loop_release_6 = n 5 # s "release-current" # gain 0.9
+
+let loop_release_7 = n 6 # s "release-current" # gain 0.9
+
+let loop_release_8 = n 7 # s "release-current" # gain 0.9
+
+
+-- ============================================================
+-- SECTION 14: LAUNCHPAD GRID — LIVE ASSIGNMENT
+-- ============================================================
+-- The only section that actually touches the Launchpad. Evaluate
+-- every line below, in order, top to bottom, same as everything
+-- else in this file. The last line takes effect immediately — no
+-- restart, no re-evaluating anything back in BootTidal.hs.
+--
+-- Deliberately NOT `let launchpadGrid = ...`: startControlThread's
+-- OSC handler was compiled once, when BootTidal.hs loaded, before
+-- any of the patterns above existed — a plain `let` here would
+-- create a new, disconnected binding that the running listener never
+-- sees (it would keep triggering silence forever). launchpadGridRef
+-- is a mutable reference the listener re-reads on every single
+-- Launchpad press, so writing into it here reaches the already-
+-- running listener correctly, however many times you do this over
+-- the course of a set. Full explanation in BootTidal.hs.
+
+let slot_1_1 = pavane_melody_A
+let slot_1_2 = galliard_melody_A
+let slot_1_3 = saltarello_melody_A
+let slot_1_4 = estampie_ouvert
+let slot_1_5 = courante_melody_A
+let slot_1_6 = consort_soprano
+let slot_1_7 = allemande_melody_A
+let slot_1_8 = fanfare_upper
+
+let slot_2_1 = pavane_alto
+let slot_2_2 = galliard_alto
+let slot_2_3 = saltarello_inner_A
+let slot_2_4 = silence
+let slot_2_5 = silence
+let slot_2_6 = consort_alto
+let slot_2_7 = allemande_inner_A
+let slot_2_8 = fanfare_mid
+
+let slot_3_1 = pavane_tenor
+let slot_3_2 = galliard_tenor
+let slot_3_3 = saltarello_tenor
+let slot_3_4 = silence
+let slot_3_5 = silence
+let slot_3_6 = consort_tenor
+let slot_3_7 = allemande_tenor
+let slot_3_8 = silence
+
+let slot_4_1 = pavane_bass_A
+let slot_4_2 = galliard_bass_A
+let slot_4_3 = saltarello_bass_A
+let slot_4_4 = silence
+let slot_4_5 = courante_bass_A
+let slot_4_6 = consort_bass
+let slot_4_7 = allemande_bass_A
+let slot_4_8 = fanfare_low
+
+let slot_5_1 = pavane_keys_A
+let slot_5_2 = galliard_keys_A
+let slot_5_3 = saltarello_keys_A
+let slot_5_4 = silence
+let slot_5_5 = courante_keys_hemiola
+let slot_5_6 = pavane_lute_A
+let slot_5_7 = allemande_keys_A
+let slot_5_8 = fanfare_bells
+
+let slot_6_1 = pavane_drone
+let slot_6_2 = pulse_tonic
+let slot_6_3 = pulse_fifth
+let slot_6_4 = estampie_drone
+let slot_6_5 = silence
+let slot_6_6 = drone_texture_root
+let slot_6_7 = silence
+let slot_6_8 = drone_texture_fifth
+
+let slot_7_1 = silence
+let slot_7_2 = galliard_tabor_A
+let slot_7_3 = saltarello_tabor_A
+let slot_7_4 = estampie_framedrum
+let slot_7_5 = estampie_nakers
+let slot_7_6 = silence
+let slot_7_7 = silence
+let slot_7_8 = silence
+
+let slot_8_1 = loop_release_1
+let slot_8_2 = loop_release_2
+let slot_8_3 = loop_release_3
+let slot_8_4 = loop_release_4
+let slot_8_5 = loop_release_5
+let slot_8_6 = loop_release_6
+let slot_8_7 = loop_release_7
+let slot_8_8 = loop_release_8
+
+-- Wrapped in an extra list layer: this is now page 0 of launchpadGridRef's
+-- list-of-pages. Add more pages later by appending another 8x8 block here,
+-- e.g. [ pageZero, pageOne, ... ] -- the top-row arrow buttons page through
+-- however many are listed, no code changes needed elsewhere for that part.
+writeIORef launchpadGridRef [[[slot_1_1,slot_1_2,slot_1_3,slot_1_4,slot_1_5,slot_1_6,slot_1_7,slot_1_8],[slot_2_1,slot_2_2,slot_2_3,slot_2_4,slot_2_5,slot_2_6,slot_2_7,slot_2_8],[slot_3_1,slot_3_2,slot_3_3,slot_3_4,slot_3_5,slot_3_6,slot_3_7,slot_3_8],[slot_4_1,slot_4_2,slot_4_3,slot_4_4,slot_4_5,slot_4_6,slot_4_7,slot_4_8],[slot_5_1,slot_5_2,slot_5_3,slot_5_4,slot_5_5,slot_5_6,slot_5_7,slot_5_8],[slot_6_1,slot_6_2,slot_6_3,slot_6_4,slot_6_5,slot_6_6,slot_6_7,slot_6_8],[slot_7_1,slot_7_2,slot_7_3,slot_7_4,slot_7_5,slot_7_6,slot_7_7,slot_7_8],[slot_8_1,slot_8_2,slot_8_3,slot_8_4,slot_8_5,slot_8_6,slot_8_7,slot_8_8]]]
